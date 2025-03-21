@@ -16,8 +16,6 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     categoryId: 0,
     answers: [
       { text: '', correct: true },
-      { text: '', correct: false },
-      { text: '', correct: false },
       { text: '', correct: false }
     ]
   });
@@ -68,8 +66,6 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       categoryId: categories.find((c: Category) => c.slug === categorySlug)?.id || 0,
       answers: [
         { text: '', correct: true },
-        { text: '', correct: false },
-        { text: '', correct: false },
         { text: '', correct: false }
       ]
     });
@@ -108,16 +104,52 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     setFormData({ ...formData, answers: updatedAnswers });
   };
 
+  const addAnswer = () => {
+    setFormData({
+      ...formData,
+      answers: [...formData.answers, { text: '', correct: false }]
+    });
+  };
+
+  const removeAnswer = (index: number) => {
+    if (formData.answers.length <= 2) {
+      setError("A minimum of 2 answers is required");
+      return;
+    }
+
+    // If removing the only correct answer, make the first remaining answer correct
+    const isRemovingCorrect = formData.answers[index].correct;
+    const newAnswers = formData.answers.filter((_, i) => i !== index);
+    
+    if (isRemovingCorrect && !newAnswers.some(a => a.correct)) {
+      newAnswers[0].correct = true;
+    }
+
+    setFormData({
+      ...formData,
+      answers: newAnswers
+    });
+  };
+
   const deleteQuestion = async (question: Question) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
+    
+    setLoading(true);
     try {
       console.log(`🗑️ Attempting to delete question ID: ${question.id}`);
       await api.questions.delete(question.id);
       console.log(`✅ Successfully deleted question ID: ${question.id}`);
+      
+      // Update local state and refresh
       setQuestions(questions.filter(q => q.id !== question.id));
+      
+      // Show success message
+      setError(null);
     } catch (err) {
       console.error(`❌ Failed to delete question ID: ${question.id}:`, err);
       setError('Failed to delete question');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -141,6 +173,8 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     e.preventDefault();
     setError(null);
     if (!validateForm()) return;
+    
+    setLoading(true);
     try {
       if (isEditing && selectedQuestion) {
         console.log(`✏️ Updating question ID: ${selectedQuestion.id}`, formData);
@@ -151,7 +185,11 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
           formData.answers
         );
         console.log(`✅ Question updated successfully:`, updatedQuestion);
-        setQuestions(questions.map(q => q.id === updatedQuestion.id ? updatedQuestion : q));
+        
+        // Update the question in the list
+        setQuestions(questions.map(q => 
+          q.id === updatedQuestion.id ? updatedQuestion : q
+        ));
       } else {
         console.log(`➕ Creating new question:`, formData);
         console.log(`Using category ID:`, formData.categoryId);
@@ -161,6 +199,8 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
           formData.answers
         );
         console.log(`✅ Question created successfully:`, newQuestion);
+        
+        // Add the new question to the list
         setQuestions([...questions, newQuestion]);
       }
       resetForm();
@@ -168,6 +208,8 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       console.error(`❌ Failed to save question:`, err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to save question: ${errorMessage}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -200,7 +242,17 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         </div>
         
         <div className="space-y-3">
-          <label className="block mb-1">Answers:</label>
+          <div className="flex justify-between items-center mb-2">
+            <label className="block font-medium">Answers:</label>
+            <button 
+              type="button" 
+              onClick={addAnswer} 
+              className="px-2 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+            >
+              + Add Answer
+            </button>
+          </div>
+          
           {formData.answers.map((answer, index) => (
             <div key={index} className="flex items-center space-x-2">
               <input 
@@ -216,16 +268,27 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
                 placeholder={`Answer ${index + 1}`} 
                 required 
               />
+              <button 
+                type="button"
+                onClick={() => removeAnswer(index)}
+                className="px-2 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+                disabled={formData.answers.length <= 2}
+                title={formData.answers.length <= 2 ? "Minimum 2 answers required" : "Remove answer"}
+              >
+                &times;
+              </button>
             </div>
           ))}
+          <p className="text-sm text-gray-600 italic">At least 2 answers are required</p>
         </div>
         
         <div className="flex space-x-2">
           <button 
             type="submit"
             className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            disabled={loading}
           >
-            {isEditing ? 'Update' : 'Create'} Question
+            {loading ? 'Saving...' : isEditing ? 'Update Question' : 'Create Question'}
           </button>
           {isEditing && (
             <button 
