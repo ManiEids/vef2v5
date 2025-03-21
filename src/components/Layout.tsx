@@ -24,7 +24,12 @@ export function Layout({ children }: LayoutProps) {
             </li>
             <li>
               <Link href="/admin/question-manager" className="space-button px-4 py-2 rounded text-white">
-                Question Manager
+                Questions
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/categories" className="space-button px-4 py-2 rounded text-white">
+                Categories
               </Link>
             </li>
           </ul>

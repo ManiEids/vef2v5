@@ -53,7 +53,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         console.log(`✅ Successfully loaded ${questionsData.length} questions (unfiltered)`);
         
         // Filter out invalid questions
-        const validQuestions = questionsData.filter(q => {
+        const validQuestions = questionsData.filter((q: Question) => {
           // Must have at least 2 answers
           if (!q.answers || q.answers.length < 2) {
             console.log(`⚠️ Filtered out question ID ${q.id}: insufficient answers`);

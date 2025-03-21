@@ -65,13 +65,13 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
     }
     
     setFormData({ ...formData, answers: updatedAnswers });
+    console.log(`Answer ${index} changed - ${field}:`, value);
   };
 
   const addAnswer = () => {
-    setFormData({
-      ...formData,
-      answers: [...formData.answers, { text: '', correct: false }]
-    });
+    const newAnswers = [...formData.answers, { text: '', correct: false }];
+    setFormData({ ...formData, answers: newAnswers });
+    console.log('Answer added - total answers:', newAnswers.length);
   };
 
   const removeAnswer = (index: number) => {
@@ -92,6 +92,7 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
       ...formData,
       answers: newAnswers
     });
+    console.log(`Answer ${index} removed - remaining answers:`, newAnswers.length);
   };
 
   const validateForm = () => {
@@ -120,6 +121,14 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
     try {
       // Create a deep copy of the form data to avoid reference issues
       const formDataToSubmit = JSON.parse(JSON.stringify(formData));
+      
+      // Ensure answers are properly formatted for the API
+      formDataToSubmit.answers = formDataToSubmit.answers.map((a: { text: string; correct: boolean; id?: number }) => ({
+        text: a.text,
+        correct: a.correct,
+        // Exclude any IDs since the backend recreates all answers
+      }));
+      
       console.log('Modal submitting form data:', formDataToSubmit);
       
       // Pass the form data to the parent component
