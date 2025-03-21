@@ -173,19 +173,27 @@ export const questionApi = {
   
   // Update question
   update: (id: string | number, questionText: string, categoryId: number, formAnswers: any[]) => {
-    // Transform answers from form format to API format
-    const answers = formAnswers.map(a => ({
-      id: a.id,             // Keep original ID if available
-      answer: a.text,       // Map form's 'text' to API's 'answer'
-      correct: a.correct
-    }));
+    // Transform answers from form format to API format - ensure all required fields are present
+    const answers = formAnswers.map(a => {
+      const answer = {
+        answer: a.text || a.answer, // Accept either format
+        correct: a.correct,
+        questionId: id // Ensure this is included
+      };
+      
+      // Only add ID if it exists (for existing answers)
+      if (a.id) {
+        return { ...answer, id: a.id };
+      }
+      
+      return answer;
+    });
     
-    console.log('Updating question with data:', {
-      id,
+    console.log('🔍 Updating question - Request structure:', JSON.stringify({
       question: questionText,
       categoryId,
       answers
-    });
+    }, null, 2));
     
     return apiFetch(`/question/${id}`, { // Endpoint should be /question/:id
       method: 'PATCH',

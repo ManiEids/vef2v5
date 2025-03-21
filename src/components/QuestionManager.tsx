@@ -140,8 +140,8 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       await api.questions.delete(question.id);
       console.log(`✅ Successfully deleted question ID: ${question.id}`);
       
-      // Update local state and refresh
-      setQuestions(questions.filter(q => q.id !== question.id));
+      // Refresh questions from the server to ensure UI is in sync
+      await loadQuestions(categorySlug);
       
       // Show success message
       setError(null);
@@ -178,19 +178,30 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     try {
       if (isEditing && selectedQuestion) {
         console.log(`✏️ Updating question ID: ${selectedQuestion.id}`, formData);
+        
+        // Ensure answers are formatted exactly as the backend expects
+        const formattedAnswers = formData.answers.map(a => {
+          if ('id' in a) {
+            return { id: a.id, answer: a.text, correct: a.correct, questionId: selectedQuestion.id };
+          }
+          return { answer: a.text, correct: a.correct, questionId: selectedQuestion.id };
+        });
+        
+        console.log('Formatted answers for update:', formattedAnswers);
+        
         const updatedQuestion = await api.questions.update(
           selectedQuestion.id,
           formData.question,
           formData.categoryId,
-          formData.answers
+          formattedAnswers
         );
+        
         console.log(`✅ Question updated successfully:`, updatedQuestion);
         
-        // Update the question in the list
-        setQuestions(questions.map(q => 
-          q.id === updatedQuestion.id ? updatedQuestion : q
-        ));
+        // Refresh questions from server instead of updating local state
+        await loadQuestions(categorySlug);
       } else {
+        // ...existing code for creating questions...
         console.log(`➕ Creating new question:`, formData);
         console.log(`Using category ID:`, formData.categoryId);
         const newQuestion = await api.questions.create(
@@ -200,8 +211,8 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         );
         console.log(`✅ Question created successfully:`, newQuestion);
         
-        // Add the new question to the list
-        setQuestions([...questions, newQuestion]);
+        // Refresh questions from server
+        await loadQuestions(categorySlug);
       }
       resetForm();
     } catch (err) {
