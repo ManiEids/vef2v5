@@ -33,14 +33,21 @@ const normalizeAnswer = (answer: any): Answer => ({
 
 export async function getCategories(): Promise<Category[]> {
   console.log("Fetching categories from", process.env.NEXT_PUBLIC_API_BASE_URL);
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/categories`, { cache: "no-store" });
-  console.log("Response status:", response.status);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch categories: ${response.status}`);
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/categories`, { cache: "no-store" });
+    console.log("Response status:", response.status);
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Error fetching categories. Status:", response.status, "Body:", errorBody);
+      throw new Error(`Failed to fetch categories: ${response.status}`);
+    }
+    const data = await response.json();
+    console.log("Categories data received:", data);
+    return data.data ? data.data : data;
+  } catch (error) {
+    console.error("Exception in getCategories:", error);
+    throw error; // rethrow so the UI can catch it as well
   }
-  const data = await response.json();
-  // If the response has a data property, return that array
-  return data.data ? data.data : data;
 }
 
 export async function getCategory(slug: string): Promise<Category> {
@@ -55,18 +62,25 @@ export async function getCategory(slug: string): Promise<Category> {
 }
 
 export async function getQuestionsByCategory(slug: string): Promise<Question[]> {
-  const response = await fetch(`${API_BASE_URL}/questions/category/${slug}`);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch questions: ${response.status}`);
+  console.log(`Fetching questions for category: ${slug} from ${process.env.NEXT_PUBLIC_API_BASE_URL}`);
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/questions/category/${slug}`);
+    console.log("Response status (questions):", response.status);
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Error fetching questions. Status:", response.status, "Body:", errorBody);
+      throw new Error(`Failed to fetch questions: ${response.status}`);
+    }
+    const result = await response.json();
+    console.log("Questions data received:", result);
+    const questionsData = result.data ? result.data : result;
+    return Array.isArray(questionsData) 
+      ? questionsData.map(normalizeQuestion) 
+      : [];
+  } catch (error) {
+    console.error("Exception in getQuestionsByCategory:", error);
+    throw error;
   }
-  
-  const result = await response.json();
-  const questionsData = result.data ? result.data : result;
-  
-  return Array.isArray(questionsData) 
-    ? questionsData.map(normalizeQuestion) 
-    : [];
 }
 
 // Update other client-side API functions using the same pattern
