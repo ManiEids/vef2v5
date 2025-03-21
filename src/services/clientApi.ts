@@ -32,13 +32,15 @@ const normalizeAnswer = (answer: any): Answer => ({
 });
 
 export async function getCategories(): Promise<Category[]> {
-  console.log("Fetching categories from", API_BASE_URL); // Added logging
-  const response = await fetch(`${API_BASE_URL}/categories`, { cache: "no-store" }); // updated
+  console.log("Fetching categories from", process.env.NEXT_PUBLIC_API_BASE_URL);
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/categories`, { cache: "no-store" });
+  console.log("Response status:", response.status);
   if (!response.ok) {
     throw new Error(`Failed to fetch categories: ${response.status}`);
   }
-  
-  return await response.json();
+  const data = await response.json();
+  // If the response has a data property, return that array
+  return data.data ? data.data : data;
 }
 
 export async function getCategory(slug: string): Promise<Category> {
