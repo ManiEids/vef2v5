@@ -2,13 +2,29 @@
  * Simple API helper that abstracts away complexities of data transformation
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://vef2v3.onrender.com';
+// Use our proxy API instead of directly hitting the backend
+const useProxy = process.env.NODE_ENV === 'production'; // Use proxy in production to avoid CORS issues
+console.log('API mode:', useProxy ? 'Using proxy to avoid CORS' : 'Direct API access');
+
+// Function to determine the right API URL based on environment
+function getApiUrl(endpoint: string): string {
+  if (useProxy) {
+    // In production, use our proxy API endpoint
+    return `/api/proxy?path=${encodeURIComponent(endpoint)}`;
+  } else {
+    // In development, use the direct API URL
+    const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://vef2v3.onrender.com';
+    return `${API_URL}${endpoint}`;
+  }
+}
 
 // Unified fetch wrapper with error handling
 async function apiFetch(endpoint: string, options?: RequestInit) {
-  console.log(`Fetching ${API_URL}${endpoint}`);
+  const url = getApiUrl(endpoint);
+  console.log(`Fetching: ${url} (${useProxy ? 'via proxy' : 'direct'})`);
+  
   try {
-    const response = await fetch(`${API_URL}${endpoint}`, options);
+    const response = await fetch(url, options);
     
     // Handle 404 specially
     if (response.status === 404) {
@@ -21,9 +37,16 @@ async function apiFetch(endpoint: string, options?: RequestInit) {
       throw new Error(errorData.message || `API error: ${response.status}`);
     }
     
+    console.log(`API response from ${endpoint}: status=${response.status}`);
     return await response.json();
   } catch (error) {
     console.error(`API error for ${endpoint}:`, error);
+    
+    // Enhanced error logging
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      console.error('Network error - possible causes: CORS issues, network connectivity, or server down');
+    }
+    
     throw error;
   }
 }

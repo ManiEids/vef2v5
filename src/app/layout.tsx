@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { BackendWaker } from '@/components/BackendWaker';
 import { StarsBackground } from '@/components/StarsBackground';
+import { ApiDiagnostics } from '@/components/ApiDiagnostics';
 
 export const metadata: Metadata = {
   title: 'verkefni 4 - vefforritun 2 - mani - quiz',
@@ -21,6 +22,7 @@ export default function RootLayout({
           {children}
         </main>
         <BackendWaker />
+        <ApiDiagnostics />
       </body>
     </html>
   );
