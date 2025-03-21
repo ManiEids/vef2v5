@@ -26,10 +26,7 @@ export async function getCategories(): Promise<Category[]> {
   console.log('Making request to:', `${API_BASE_URL}/categories`);
   
   try {
-    const response = await fetch(`${API_BASE_URL}/categories`, {
-      // Add cache: 'no-store' to avoid caching issues during development
-      cache: 'no-store',
-    });
+    const response = await fetch(`${API_BASE_URL}/categories`);
     
     console.log('Response status:', response.status);
     
@@ -188,3 +185,8 @@ export async function updateQuestion(
   
   return response.json();
 }
+
+// Re-export everything for simpler imports
+export * from './api-types';
+export * from './serverApi';
+export * from './clientApi';
