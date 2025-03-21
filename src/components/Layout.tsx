@@ -18,13 +18,8 @@ export function Layout({ children }: LayoutProps) {
           
           <ul className="flex flex-wrap space-x-2 space-y-2 md:space-y-0">
             <li>
-              <Link href="/admin/categories" className="space-button px-4 py-2 rounded text-white">
-                Categories
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/questions" className="space-button px-4 py-2 rounded text-white">
-                Questions
+              <Link href="/" className="space-button px-4 py-2 rounded text-white">
+                Home
               </Link>
             </li>
             <li>

@@ -5,6 +5,7 @@ import { Layout } from '@/components/Layout';
 import { QuestionManager } from '@/components/QuestionManager';
 import { api } from '@/services/simpleApi';
 import { Category } from '@/services/api-types';
+import Link from 'next/link';
 
 export default function QuestionManagerPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -69,6 +70,12 @@ export default function QuestionManagerPage() {
           </div>
           
           {selectedCategory && <QuestionManager categorySlug={selectedCategory} />}
+          
+          <div className="mt-8 text-center">
+            <Link href="/" className="inline-block space-button px-6 py-2 rounded text-white">
+              Back to Home
+            </Link>
+          </div>
         </>
       )}
     </Layout>
