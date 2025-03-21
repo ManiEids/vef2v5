@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import { BackendWaker } from '@/components/BackendWaker';
 
 export const metadata: Metadata = {
   title: 'Vefforritun 2 - Verkefni 4',
@@ -13,7 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="is">
-      <body>{children}</body>
+      <body>
+        {children}
+        <BackendWaker />
+      </body>
     </html>
   );
 }

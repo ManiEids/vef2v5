@@ -23,15 +23,29 @@ export interface Question {
 
 // API functions
 export async function getCategories(): Promise<Category[]> {
-  const response = await fetch(`${API_BASE_URL}/categories`);
+  console.log('Making request to:', `${API_BASE_URL}/categories`);
   
-  if (!response.ok) {
-    throw new Error(`Failed to fetch categories: ${response.status}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}/categories`, {
+      // Add cache: 'no-store' to avoid caching issues during development
+      cache: 'no-store',
+    });
+    
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch categories: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    console.log('Categories data received:', result);
+    
+    // Handle paginated response from your backend
+    return result.data ? result.data : result;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    throw error;
   }
-  
-  const result = await response.json();
-  // Handle paginated response from your backend
-  return result.data ? result.data : result;
 }
 
 export async function getCategory(slug: string): Promise<Category> {
