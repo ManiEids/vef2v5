@@ -16,3 +16,6 @@ npm run dev
 ## Stillingar
 Útbúðu `.env.local` skrá:
 
+hjálp frá github copilot með aðferðir leiðir til að fá hluti til að virka
+
+mikið byggt út frá hópaverkefni 1 sem ég gerði .
