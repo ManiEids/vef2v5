@@ -191,7 +191,10 @@ export const questionApi = {
     console.log(`🚀 Sending payload to backend:`, payload);
     
     const path = `/question/${id}`;
-    return apiProxyRequest('PATCH', path, payload);
+    return apiFetch(path, { 
+      method: 'PATCH', 
+      body: JSON.stringify(payload) 
+    });
   },
   
   // Delete question - improved robustness

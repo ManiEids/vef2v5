@@ -8,7 +8,7 @@ interface CategoryListProps {
 
 export function CategoryList({ categories }: CategoryListProps) {
   if (categories.length === 0) {
-    return <p>No categories found.</p>; // Engir flokkar
+    return <p>No categories found.</p>; // Engir
   }
 
   return (

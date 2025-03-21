@@ -78,22 +78,22 @@ export function QuestionForm({
     
     // Simple validation
     if (text.trim() === '') {
-      setError('Question cannot be empty'); // Spurning má ekki vera tóm
+      setError('Question cannot be empty'); // Tómt
       return;
     }
     
     if (answers.some(answer => answer.text.trim() === '')) {
-      setError('Answers cannot be empty'); // Svör mega ekki vera tóm
+      setError('Answers cannot be empty'); // Tóm svör
       return;
     }
     
     if (!answers.some(answer => answer.correct)) {
-      setError('There must be at least one correct answer'); // Eitt rétt svar
+      setError('There must be at least one correct answer'); // Eitt rétt
       return;
     }
     
     if (!selectedCategoryId && !categoryId) {
-      setError('Please select a category for the question'); // Veldu flokk
+      setError('Please select a category for the question'); // Veldu
       return;
     }
 
@@ -102,7 +102,7 @@ export function QuestionForm({
     try {
       const activeCategoryId = selectedCategoryId || categoryId;
       if (!activeCategoryId) {
-        throw new Error('Category ID is required'); // Flokks ID vantar
+        throw new Error('Category ID is required'); // Vantar ID
       }
       
       await onSubmit(activeCategoryId, text, answers);
@@ -213,7 +213,7 @@ export function QuestionForm({
         disabled={loading}
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
-        {loading ? 'Vista...' : initialText ? 'Uppfæra spurningu' : 'Búa til spurningu'} // Vista.../Uppfæra/Búa til
+        {loading ? 'Vista...' : initialText ? 'Uppfæra spurningu' : 'Búa til spurningu'} // Vista/Uppfæra/Nýtt
       </button>
     </form>
   );

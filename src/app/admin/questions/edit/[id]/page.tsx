@@ -61,7 +61,7 @@ export default function EditQuestionPage({ params }: EditQuestionPageProps) {
       await api.questions.update(question.id, text, categoryId, answers);
       
       router.push('/admin/questions');
-      return Promise.resolve(); // Fixed errant "t," that was causing the build error
+      return Promise.resolve();
     } catch (error) {
       return Promise.reject(error);
     }
@@ -79,7 +79,7 @@ export default function EditQuestionPage({ params }: EditQuestionPageProps) {
     return (
       <Layout>
         <div className="bg-red-100 text-red-800 p-3 rounded">
-          {error || 'Spurning fannst ekki'} // Villa eða engin spurning
+          {error || 'Spurning fannst ekki'} // Fannst ekki
         </div>
         <button
           onClick={() => router.push('/admin/questions')}

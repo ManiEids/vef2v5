@@ -21,7 +21,7 @@ export function CategoryForm({ onSubmit, initialTitle = '' }: CategoryFormProps)
       await onSubmit(title); // Changed from name
       setTitle('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred'); // Óþekkt villa
+      setError(err instanceof Error ? err.message : 'An unknown error occurred'); // Óþekkt
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ export function CategoryForm({ onSubmit, initialTitle = '' }: CategoryFormProps)
         disabled={loading || !title.trim()}
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
       >
-        {loading ? 'Saving...' : initialTitle ? 'Update Category' : 'Create Category'} // Vista.../Uppfæra/Búa til
+        {loading ? 'Saving...' : initialTitle ? 'Update Category' : 'Create Category'} // Vista/Uppfæra/Nýtt
       </button>
     </form>
   );

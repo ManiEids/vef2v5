@@ -12,7 +12,7 @@ export function QuestionList({ questions }: QuestionListProps) {
   const [feedback, setFeedback] = useState<Record<string | number, boolean | null>>({});
 
   if (questions.length === 0) {
-    return <p>No questions found in this category.</p>; // Engar spurningar
+    return <p>No questions found in this category.</p>; // Engar
   }
 
   const handleAnswerSelect = (questionId: string | number, answerId: string | number) => {

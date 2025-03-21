@@ -18,7 +18,7 @@ export function BackendWaker() {
       
       try {
         setStatus('pinging');
-        console.log('Pinging backend to wake it up...'); // Pinga bakenda
+        console.log('Pinging backend to wake it up...'); // Pinga
         
         const start = Date.now();
         const response = await fetch(endpointUrl, { cache: "no-store" });
@@ -33,12 +33,12 @@ export function BackendWaker() {
           setErrorDetails(`Server responded with status ${response.status}`);
         }
       } catch (error) {
-        console.error('Failed to wake up backend:', error); // Vakning mistókst
+        console.error('Failed to wake up backend:', error); // Villa
         setStatus('error');
         
         // Detect CORS issues
         if (error instanceof TypeError && error.message === 'Failed to fetch') {
-          setErrorDetails('Connection failed. This might be due to CORS restrictions, network issues, or the backend server being down.'); // Tenging mistókst
+          setErrorDetails('Connection failed. This might be due to CORS restrictions, network issues, or the backend server being down.'); // Tengi villa
         } else {
           setErrorDetails(error instanceof Error ? error.message : 'Unknown error');
         }
@@ -56,12 +56,12 @@ export function BackendWaker() {
     }`}>
       {status === 'pinging' ? (
         <p className="text-yellow-800 flex items-center">
-          <span className="mr-2">Connecting to backend...</span> // Tengist bakenda
+          <span className="mr-2">Connecting to backend...</span> // Tengist
           <span className="animate-pulse">⏳</span>
         </p>
       ) : (
         <div className="text-red-800">
-          <p className="font-bold mb-1">Backend connection failed</p> // Tenging mistókst
+          <p className="font-bold mb-1">Backend connection failed</p> // Villa
           {errorDetails && <p className="text-sm">{errorDetails}</p>}
           <button 
             onClick={() => window.location.reload()}

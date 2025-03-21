@@ -89,7 +89,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     try {
       if (selectedQuestion) {
         // Update existing question
-        console.log(`📝 Updating question ID ${selectedQuestion.id}`, questionData);
+        console.log(`📝 Updating question ID ${selectedQuestion.id}`, questionData); // Uppfæri
         
         const updatedQuestion = await api.questions.update(
           selectedQuestion.id,

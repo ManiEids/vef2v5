@@ -24,7 +24,7 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
   // Initialize form with question data when editing
   useEffect(() => {
     if (question) {
-      console.log('Initializing modal with question data:', question); // Upphafsstillir gögn
+      console.log('Initializing modal with question data:', question); // Upphafsstilla
       setFormData({
         question: question.question,
         categoryId: question.categoryId || categoryId,
@@ -71,7 +71,7 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
   const addAnswer = () => {
     const newAnswers = [...formData.answers, { text: '', correct: false }];
     setFormData({ ...formData, answers: newAnswers });
-    console.log('Answer added - total answers:', newAnswers.length); // Svari bætt við
+    console.log('Answer added - total answers:', newAnswers.length); // Bæti við
   };
 
   const removeAnswer = (index: number) => {
@@ -92,20 +92,20 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
       ...formData,
       answers: newAnswers
     });
-    console.log(`Answer ${index} removed - remaining answers:`, newAnswers.length); // Svari eytt
+    console.log(`Answer ${index} removed - remaining answers:`, newAnswers.length); // Eyði
   };
 
   const validateForm = () => {
     if (!formData.question.trim()) {
-      setError('Question text cannot be empty'); // Spurning má ekki vera tóm
+      setError('Question text cannot be empty'); // Tómt
       return false;
     }
     if (formData.answers.some(a => !a.text.trim())) {
-      setError('All options must have text'); // Allir valmöguleikar
+      setError('All options must have text'); // Allt útfyllt
       return false;
     }
     if (!formData.answers.some(a => a.correct)) {
-      setError('At least one answer must be marked as correct'); // Eitt rétt svar
+      setError('At least one answer must be marked as correct'); // Eitt rétt
       return false;
     }
     return true;
@@ -129,14 +129,14 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
         // Exclude any IDs since the backend recreates all answers
       }));
       
-      console.log('Modal submitting form data:', formDataToSubmit); // Senda gögn
+      console.log('Modal submitting form data:', formDataToSubmit); // Sendi
       
       // Pass the form data to the parent component
       await onSave(formDataToSubmit);
       onClose();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'; // Óþekkt villa
-      setError(`Failed to save question: ${errorMessage}`); // Vista mistókst
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'; // Óþekkt
+      setError(`Failed to save question: ${errorMessage}`); // Villa
     } finally {
       setLoading(false);
     }
@@ -149,7 +149,7 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
       <div className="bg-white text-black rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-4">
-            {question ? 'Edit Question' : 'Add New Question'} // Breyta/Bæta við
+            {question ? 'Edit Question' : 'Add New Question'} // Breyta/Nýtt
           </h2>
           
           {error && (
@@ -222,7 +222,7 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
                 disabled={loading}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
-                {loading ? 'Saving...' : question ? 'Update' : 'Save'} // Vista.../Uppfæra/Vista
+                {loading ? 'Saving...' : question ? 'Update' : 'Save'} // Vista/Uppfæra/Vista
               </button>
             </div>
           </form>
