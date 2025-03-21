@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Question } from '@/services/api';
+import { Question } from '@/services/api-types';
 
 interface QuestionListProps {
   questions: Question[];
@@ -41,7 +41,7 @@ export function QuestionList({ questions }: QuestionListProps) {
     <div className="space-y-8">
       {questions.map((question) => (
         <div key={question.id} className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-xl font-semibold mb-4">{question.text}</h3>
+          <h3 className="text-xl font-semibold mb-4">{question.question}</h3> {/* Use question instead of text */}
           
           <div className="space-y-2">
             {question.answers.map((answer) => (
@@ -55,7 +55,7 @@ export function QuestionList({ questions }: QuestionListProps) {
                   className="mr-2"
                   disabled={feedback[question.id] !== undefined}
                 />
-                <label htmlFor={`answer-${answer.id}`}>{answer.text}</label>
+                <label htmlFor={`answer-${answer.id}`}>{answer.answer}</label> {/* Use answer instead of text */}
               </div>
             ))}
           </div>

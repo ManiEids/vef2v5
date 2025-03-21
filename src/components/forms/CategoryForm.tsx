@@ -3,12 +3,12 @@
 import React, { useState } from 'react';
 
 interface CategoryFormProps {
-  onSubmit: (name: string) => Promise<void>; // Changed from title to name
-  initialName?: string; // Changed from initialTitle
+  onSubmit: (title: string) => Promise<void>; // Changed from name to title
+  initialTitle?: string; // Changed from initialName
 }
 
-export function CategoryForm({ onSubmit, initialName = '' }: CategoryFormProps) {
-  const [name, setName] = useState(initialName); // Changed from title
+export function CategoryForm({ onSubmit, initialTitle = '' }: CategoryFormProps) {
+  const [title, setTitle] = useState(initialTitle); // Changed from name
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,8 +18,8 @@ export function CategoryForm({ onSubmit, initialName = '' }: CategoryFormProps) 
     setLoading(true);
 
     try {
-      await onSubmit(name); // Changed from title
-      setName('');
+      await onSubmit(title); // Changed from name
+      setTitle('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
@@ -36,15 +36,15 @@ export function CategoryForm({ onSubmit, initialName = '' }: CategoryFormProps) 
       )}
       
       <div>
-        <label htmlFor="name" className="block mb-1 font-medium">
-          Category Name
+        <label htmlFor="title" className="block mb-1 font-medium">
+          Category Title
         </label>
         <input
-          id="name"
+          id="title"
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Enter category name"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Enter category title"
           required
           className="w-full px-3 py-2 border rounded"
         />
@@ -52,10 +52,10 @@ export function CategoryForm({ onSubmit, initialName = '' }: CategoryFormProps) 
       
       <button
         type="submit"
-        disabled={loading || !name.trim()}
+        disabled={loading || !title.trim()}
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
       >
-        {loading ? 'Saving...' : initialName ? 'Update Category' : 'Create Category'}
+        {loading ? 'Saving...' : initialTitle ? 'Update Category' : 'Create Category'}
       </button>
     </form>
   );

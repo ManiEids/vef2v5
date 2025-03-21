@@ -4,6 +4,32 @@ import { Category, Question, Answer } from './api-types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+// Helper to normalize category data for frontend consumption
+const normalizeCategory = (category: any): Category => ({
+  id: category.id,
+  title: category.title || '', // Backend uses title
+  slug: category.slug
+});
+
+// Helper to normalize question data for frontend consumption
+const normalizeQuestion = (question: any): Question => ({
+  id: question.id,
+  question: question.question || '', // Backend uses question
+  categoryId: question.categoryId,
+  category: question.category ? normalizeCategory(question.category) : undefined,
+  answers: Array.isArray(question.answers) 
+    ? question.answers.map(normalizeAnswer)
+    : []
+});
+
+// Helper to normalize answer data
+const normalizeAnswer = (answer: any): Answer => ({
+  id: answer.id,
+  answer: answer.answer || '', // Backend uses answer
+  correct: answer.correct || false,
+  questionId: answer.questionId
+});
+
 export async function getCategories(): Promise<Category[]> {
   const response = await fetch(`${API_BASE_URL}/categories`);
   
@@ -12,7 +38,12 @@ export async function getCategories(): Promise<Category[]> {
   }
   
   const result = await response.json();
-  return result.data ? result.data : result;
+  const categoriesData = result.data ? result.data : result;
+  
+  // Transform data to match frontend expectations
+  return Array.isArray(categoriesData) 
+    ? categoriesData.map(normalizeCategory) 
+    : [];
 }
 
 export async function getCategory(slug: string): Promise<Category> {
@@ -22,7 +53,8 @@ export async function getCategory(slug: string): Promise<Category> {
     throw new Error(`Failed to fetch category: ${response.status}`);
   }
   
-  return response.json();
+  const result = await response.json();
+  return normalizeCategory(result);
 }
 
 export async function getQuestionsByCategory(slug: string): Promise<Question[]> {
@@ -33,24 +65,12 @@ export async function getQuestionsByCategory(slug: string): Promise<Question[]> 
   }
   
   const result = await response.json();
-  return result.data ? result.data : result;
+  const questionsData = result.data ? result.data : result;
+  
+  return Array.isArray(questionsData) 
+    ? questionsData.map(normalizeQuestion) 
+    : [];
 }
 
-// Continue with other client-side API calls
-export async function createCategory(name: string): Promise<Category> {
-  const response = await fetch(`${API_BASE_URL}/category`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name }),
-  });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-    throw new Error(error.message || `Failed to create category: ${response.status}`);
-  }
-  
-  return response.json();
-}
-
-// Add all your other API functions here with the same client-side approach
+// Update other client-side API functions using the same pattern
 // ...

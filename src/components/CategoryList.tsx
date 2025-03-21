@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Category } from '@/services/api';
+import { Category } from '@/services/api-types';
 
 interface CategoryListProps {
   categories: Category[];
@@ -22,7 +22,7 @@ export function CategoryList({ categories }: CategoryListProps) {
             href={`/categories/${category.slug}`}
             className="text-lg font-semibold text-blue-600 hover:text-blue-800"
           >
-            {category.name} {/* Changed from title to name */}
+            {category.title} {/* Use title instead of name to match backend */}
           </Link>
         </li>
       ))}
