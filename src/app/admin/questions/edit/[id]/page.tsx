@@ -4,18 +4,28 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Layout } from '@/components/Layout';
 import { QuestionForm } from '@/components/forms/QuestionForm';
-import { Category, Question } from '@/services/api-types';
+import { Category, Question, Answer } from '@/services/api-types';
+
+// Extend the Answer type to include the 'text' property if it is missing
+interface AnswerWithText extends Answer {
+  text: string;
+}
+
+// Extend the Question type to include the 'text' property if it is missing
+interface QuestionWithText extends Question {
+  text: string;
+}
 import { api } from '@/services/simpleApi'; // Use the simplified API
 
 interface EditQuestionPageProps {
   params: {
     id: string;
-  }
+  };
 }
 
 export default function EditQuestionPage({ params }: EditQuestionPageProps) {
   const router = useRouter();
-  const [question, setQuestion] = useState<Question | null>(null);
+  const [question, setQuestion] = useState<QuestionWithText | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +61,7 @@ export default function EditQuestionPage({ params }: EditQuestionPageProps) {
       await api.questions.update(question.id, text, categoryId, answers);
       
       router.push('/admin/questions');
-      return Promise.resolve();t,  // Map 'text' from form to 'answer' for API
+      return Promise.resolve(); // Fixed errant "t," that was causing the build error
     } catch (error) {
       return Promise.reject(error);
     }
@@ -84,14 +94,11 @@ export default function EditQuestionPage({ params }: EditQuestionPageProps) {
   return (
     <Layout>
       <h1 className="text-3xl font-bold mb-6">Edit Question</h1>
-      
       <QuestionForm
         categories={categories}
-        selectedCategoryId={question.categoryId || question.category?.id}
-        initialText={question.text}
-        initialAnswers={question.answers.map(a => ({
+        initialAnswers={(question.answers as AnswerWithText[]).map(a => ({
           id: a.id,
-          text: a.text,
+          text: a.text || '',
           correct: a.correct
         }))}
         onSubmit={handleUpdateQuestion}

@@ -1,7 +1,8 @@
+// Import types from absolute path using your tsconfig paths config
+import { Category, Question } from '@/services/api-types';
+
 // For server components only
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-import { Category, Question } from './api-types';
 
 // Helper functions for data normalization (same as clientApi.ts)
 const normalizeCategory = (category: any): Category => ({
