@@ -29,9 +29,9 @@ export default function AdminCategoriesPage() {
     }
   }
 
-  const handleCreateCategory = async (name: string) => {
+  const handleCreateCategory = async (title: string) => { // Changed from name
     try {
-      const newCategory = await createCategory(name);
+      const newCategory = await createCategory(title);
       setCategories([...categories, newCategory]);
       return Promise.resolve();
     } catch (error) {
@@ -39,11 +39,11 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const handleUpdateCategory = async (name: string) => {
+  const handleUpdateCategory = async (title: string) => { // Changed from name
     if (!editingCategory) return;
     
     try {
-      const updatedCategory = await updateCategory(editingCategory.slug, name);
+      const updatedCategory = await updateCategory(editingCategory.slug, title);
       setCategories(categories.map((c: Category) => 
         c.id === updatedCategory.id ? updatedCategory : c
       ));
@@ -78,7 +78,7 @@ export default function AdminCategoriesPage() {
         </h2>
         <CategoryForm 
           onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory} 
-          initialName={editingCategory?.name}
+          initialTitle={editingCategory?.title} // Changed from initialName to initialTitle
         />
         {editingCategory && (
           <button

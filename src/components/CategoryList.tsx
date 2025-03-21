@@ -16,13 +16,14 @@ export function CategoryList({ categories }: CategoryListProps) {
       {categories.map((category) => (
         <li 
           key={category.id} 
-          className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
+          className="space-card rounded-lg p-4 hover:shadow-md hover:shadow-blue-500/30 transition-shadow"
         >
           <Link 
             href={`/categories/${category.slug}`}
-            className="text-lg font-semibold text-blue-600 hover:text-blue-800"
+            className="text-lg font-semibold text-blue-300 hover:text-blue-100 flex items-center"
           >
-            {category.title} {/* Use title instead of name */}
+            <span className="mr-2 text-xl">🪐</span>
+            {category.title}
           </Link>
         </li>
       ))}
