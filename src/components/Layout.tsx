@@ -27,6 +27,11 @@ export function Layout({ children }: LayoutProps) {
                 Questions
               </Link>
             </li>
+            <li>
+              <Link href="/admin/question-manager" className="space-button px-4 py-2 rounded text-white">
+                Question Manager
+              </Link>
+            </li>
           </ul>
         </nav>
       </header>
