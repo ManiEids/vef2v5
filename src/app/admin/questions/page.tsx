@@ -89,7 +89,7 @@ export default function AdminQuestionsPage() {
           <option value="">Veldu flokk</option>
           {categories.map((category) => (
             <option key={category.id} value={category.slug}>
-              {category.name} {/* Change from category.title */}
+              {category.name} {/* This should be name, not title */}
             </option>
           ))}
         </select>
