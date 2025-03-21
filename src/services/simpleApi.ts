@@ -171,37 +171,35 @@ export const questionApi = {
     });
   },
   
-  // Update question
+  // Update question - simplified version
   update: (id: string | number, questionText: string, categoryId: number, formAnswers: any[]) => {
-    // Transform answers from form format to API format - ensure all required fields are present
+    // Map answers to the format expected by the API
     const answers = formAnswers.map(a => {
       const answer = {
         answer: a.text || a.answer, // Accept either format
         correct: a.correct,
-        questionId: id // Ensure this is included
+        questionId: id
       };
       
-      // Only add ID if it exists (for existing answers)
+      // Only add ID if it exists
       if (a.id) {
         return { ...answer, id: a.id };
       }
-      
       return answer;
     });
     
-    console.log('🔍 Updating question - Request structure:', JSON.stringify({
+    // Request data
+    const requestData = {
       question: questionText,
       categoryId,
       answers
-    }, null, 2));
+    };
     
-    return apiFetch(`/question/${id}`, { // Endpoint should be /question/:id
+    console.log('🔍 Updating question - Request structure:', JSON.stringify(requestData, null, 2));
+    
+    return apiFetch(`/question/${id}`, {
       method: 'PATCH',
-      body: JSON.stringify({
-        question: questionText,
-        categoryId,
-        answers
-      })
+      body: JSON.stringify(requestData)
     });
   },
   

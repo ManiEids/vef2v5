@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '@/services/simpleApi';
 import { Category, Question } from '@/services/api-types';
+import { QuestionModal } from './QuestionModal';
 
 export function QuestionManager({ categorySlug }: { categorySlug: string }) {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -10,15 +11,8 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    question: '',
-    categoryId: 0,
-    answers: [
-      { text: '', correct: true },
-      { text: '', correct: false }
-    ]
-  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [categoryId, setCategoryId] = useState<number>(0);
 
   useEffect(() => {
     async function loadCategories() {
@@ -29,7 +23,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         const category = categoriesData.find((c: Category) => c.slug === categorySlug);
         if (category) {
           console.log(`Found category with ID ${category.id} for slug ${categorySlug}`);
-          setFormData(prev => ({ ...prev, categoryId: category.id }));
+          setCategoryId(category.id);
         } else {
           console.error(`No category found with slug ${categorySlug}`);
         }
@@ -60,82 +54,80 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     }
   }
 
-  const resetForm = () => {
-    setFormData({
-      question: '',
-      categoryId: categories.find((c: Category) => c.slug === categorySlug)?.id || 0,
-      answers: [
-        { text: '', correct: true },
-        { text: '', correct: false }
-      ]
-    });
+  // Open modal for new question
+  const createQuestion = () => {
     setSelectedQuestion(null);
-    setIsEditing(false);
+    setIsModalOpen(true);
   };
 
+  // Open modal with existing question data
   const editQuestion = (question: Question) => {
     setSelectedQuestion(question);
-    setIsEditing(true);
-    setFormData({
-      question: question.question,
-      categoryId: question.categoryId || 0,
-      answers: question.answers.map(a => ({
-        id: a.id,
-        text: a.answer,
-        correct: a.correct
-      }))
-    });
+    setIsModalOpen(true);
   };
 
-  const handleQuestionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, question: e.target.value });
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedQuestion(null);
   };
 
-  const handleAnswerChange = (index: number, field: 'text' | 'correct', value: string | boolean) => {
-    const updatedAnswers = [...formData.answers];
-    updatedAnswers[index] = { ...updatedAnswers[index], [field]: value };
-    if (field === 'correct' && value === true) {
-      updatedAnswers.forEach((_, i) => {
-        if (i !== index) {
-          updatedAnswers[i].correct = false;
-        }
-      });
+  const saveQuestion = async (formData: any) => {
+    try {
+      if (selectedQuestion) {
+        console.log(`✏️ Updating question ID: ${selectedQuestion.id}`, formData);
+        
+        // Simplify: Just map the form answers to the API format
+        const formattedAnswers = formData.answers.map((a: any) => ({
+          answer: a.text,
+          correct: a.correct,
+          questionId: selectedQuestion.id,
+          id: a.id // Include ID if it exists
+        }));
+        
+        console.log('Formatted answers for update:', formattedAnswers);
+        
+        // Update the question - no need to track deletions
+        await api.questions.update(
+          selectedQuestion.id,
+          formData.question,
+          formData.categoryId,
+          formattedAnswers
+        );
+        
+        console.log(`✅ Question updated successfully`);
+      } else {
+        // Create new question
+        console.log(`➕ Creating new question:`, formData);
+        
+        const formattedAnswers = formData.answers.map((a: any) => ({
+          answer: a.text,
+          correct: a.correct
+        }));
+        
+        console.log('Formatted answers for create:', formattedAnswers);
+        
+        await api.questions.create(
+          formData.categoryId,
+          formData.question,
+          formattedAnswers
+        );
+        
+        console.log(`✅ Question created successfully`);
+      }
+      
+      // Reload questions to get the latest data
+      await loadQuestions(categorySlug);
+    } catch (err) {
+      console.error(`❌ Failed to save question:`, err);
+      throw err; // Let the modal handle the error display
     }
-    setFormData({ ...formData, answers: updatedAnswers });
-  };
-
-  const addAnswer = () => {
-    setFormData({
-      ...formData,
-      answers: [...formData.answers, { text: '', correct: false }]
-    });
-  };
-
-  const removeAnswer = (index: number) => {
-    if (formData.answers.length <= 2) {
-      setError("A minimum of 2 answers is required");
-      return;
-    }
-
-    // If removing the only correct answer, make the first remaining answer correct
-    const isRemovingCorrect = formData.answers[index].correct;
-    const newAnswers = formData.answers.filter((_, i) => i !== index);
-    
-    if (isRemovingCorrect && !newAnswers.some(a => a.correct)) {
-      newAnswers[0].correct = true;
-    }
-
-    setFormData({
-      ...formData,
-      answers: newAnswers
-    });
   };
 
   const deleteQuestion = async (question: Question) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
     
     setLoading(true);
-    setError(null); // Clear any previous errors
+    setError(null);
     try {
       console.log(`🗑️ Attempting to delete question ID: ${question.id}`);
       
@@ -143,110 +135,12 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       setQuestions(prev => prev.filter(q => q.id !== question.id));
       
       // Then perform the actual deletion
-      const result = await api.questions.delete(question.id);
-      
-      if (result.success) {
-        console.log(`✅ Successfully deleted question ID: ${question.id}`);
-      } else {
-        throw new Error('Delete operation failed');
-      }
+      await api.questions.delete(question.id);
+      console.log(`✅ Successfully deleted question ID: ${question.id}`);
     } catch (err) {
-      // If there was an error, refresh the list to restore state
       console.error(`❌ Failed to delete question ID: ${question.id}:`, err);
       setError('Failed to delete question, please try again');
       // Refresh questions to restore the UI to the correct state
-      await loadQuestions(categorySlug);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const validateForm = () => {
-    if (!formData.question.trim()) {
-      setError('Question text cannot be empty');
-      return false;
-    }
-    if (formData.answers.some(a => !a.text.trim())) {
-      setError('All options must have text');
-      return false;
-    }
-    if (!formData.answers.some(a => a.correct)) {
-      setError('At least one answer must be marked as correct');
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (!validateForm()) return;
-    
-    setLoading(true);
-    try {
-      if (isEditing && selectedQuestion) {
-        console.log(`✏️ Updating question ID: ${selectedQuestion.id}`, formData);
-        
-        // Ensure answers are formatted correctly for the API
-        const formattedAnswers = formData.answers.map(a => {
-          const answer = {
-            answer: a.text, // Map text to answer field
-            correct: a.correct,
-            questionId: selectedQuestion.id
-          };
-          
-          if ('id' in a && a.id) {
-            return { ...answer, id: a.id };
-          }
-          return answer;
-        });
-        
-        console.log('Formatted answers for update:', formattedAnswers);
-        
-        // Make API call
-        const updatedQuestion = await api.questions.update(
-          selectedQuestion.id,
-          formData.question,
-          formData.categoryId,
-          formattedAnswers
-        );
-        
-        console.log(`✅ Question updated successfully:`, updatedQuestion);
-        
-        // Refresh questions from server
-        await loadQuestions(categorySlug);
-      } else {
-        // Create question
-        console.log(`➕ Creating new question:`, formData);
-        console.log(`Using category ID:`, formData.categoryId);
-        
-        // Format answers for the API correctly
-        const formattedAnswers = formData.answers.map(a => ({
-          answer: a.text, // Map 'text' to 'answer' as expected by API
-          correct: a.correct
-        }));
-        
-        console.log('Formatted answers for create:', formattedAnswers);
-        
-        // Make the API call
-        const newQuestion = await api.questions.create(
-          formData.categoryId,
-          formData.question,
-          formattedAnswers
-        );
-        
-        console.log(`✅ Question created successfully:`, newQuestion);
-        
-        // Refresh questions from server
-        await loadQuestions(categorySlug);
-      }
-      resetForm();
-    } catch (err) {
-      console.error(`❌ Failed to save question:`, err);
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setError(`Failed to save question: ${errorMessage}`);
-      
-      // Refresh to restore state
       await loadQuestions(categorySlug);
     } finally {
       setLoading(false);
@@ -259,90 +153,25 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
 
   return (
     <div className="space-card p-6">
-      <h2 className="text-2xl font-bold mb-4">
-        {isEditing ? 'Edit Question' : 'Add New Question'}
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Questions in this category</h2>
+        <button 
+          onClick={createQuestion}
+          className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+        >
+          Add New Question
+        </button>
+      </div>
+
+      {/* Error message */}
       {error && (
         <div className="bg-red-100 text-red-800 p-3 rounded mb-4">
           {error}
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="mb-8 space-y-4">
-        <div>
-          <label className="block mb-1">Question:</label>
-          <input 
-            type="text" 
-            className="w-full p-2 border rounded" 
-            value={formData.question} 
-            onChange={handleQuestionChange} 
-            required 
-          />
-        </div>
-        
-        <div className="space-y-3">
-          <div className="flex justify-between items-center mb-2">
-            <label className="block font-medium">Answers:</label>
-            <button 
-              type="button" 
-              className="px-2 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
-              onClick={addAnswer} 
-            >
-              + Add Answer
-            </button>
-          </div>
-          
-          {formData.answers.map((answer, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <input 
-                type="checkbox" 
-                checked={answer.correct} 
-                onChange={(e) => handleAnswerChange(index, 'correct', e.target.checked)} 
-              />
-              <input 
-                type="text" 
-                className="flex-1 p-2 border rounded" 
-                value={answer.text} 
-                onChange={(e) => handleAnswerChange(index, 'text', e.target.value)} 
-                placeholder={`Answer ${index + 1}`} 
-                required 
-              />
-              <button 
-                type="button" 
-                className="px-2 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
-                onClick={() => removeAnswer(index)}
-                disabled={formData.answers.length <= 2}
-                title={formData.answers.length <= 2 ? "Minimum 2 answers required" : "Remove answer"}
-              >
-                &times;
-              </button>
-            </div>
-          ))}
-          <p className="text-sm text-gray-600 italic">At least 2 answers are required</p>
-        </div>
-        
-        <div className="flex space-x-2">
-          <button 
-            type="submit" 
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-            disabled={loading}
-          >
-            {loading ? 'Saving...' : isEditing ? 'Update Question' : 'Create Question'}
-          </button>
-          {isEditing && (
-            <button 
-              type="button" 
-              className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
-              onClick={resetForm}
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-      </form>
-      
+      {/* Question list */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold">Questions in this category</h3>
         {questions.length === 0 ? (
           <p>No questions yet.</p>
         ) : (
@@ -358,14 +187,12 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
               </ul>
               <div className="mt-3 flex space-x-2">
                 <button 
-                  type="button" 
                   className="bg-blue-500 text-white py-1 px-3 rounded text-sm hover:bg-blue-600"
                   onClick={() => editQuestion(q)}
                 >
                   Edit
                 </button>
                 <button 
-                  type="button" 
                   className="bg-red-500 text-white py-1 px-3 rounded text-sm hover:bg-red-600"
                   onClick={() => deleteQuestion(q)}
                 >
@@ -376,6 +203,15 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
           ))
         )}
       </div>
+
+      {/* Modal for creating/editing questions */}
+      <QuestionModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSave={saveQuestion}
+        question={selectedQuestion}
+        categoryId={categoryId}
+      />
     </div>
   );
 }
