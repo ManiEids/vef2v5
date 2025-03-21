@@ -8,6 +8,8 @@ export function BackendWaker() {
   useEffect(() => {
     async function wakeUpBackend() {
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+      console.log('BackendWaker: API_BASE_URL =', API_BASE_URL);  // Added log
+      
       if (!API_BASE_URL) return;
       
       try {
@@ -15,11 +17,15 @@ export function BackendWaker() {
         console.log('Pinging backend to wake it up...');
         
         const start = Date.now();
-        const response = await fetch(`${API_BASE_URL}/categories`);
+        const response = await fetch(`${API_BASE_URL}/categories`, { cache: "no-store" }); // updated
         const elapsed = Date.now() - start;
         
         console.log(`Backend responded in ${elapsed}ms with status ${response.status}`);
-        setStatus('success');
+        if (response.ok) {
+          setStatus('success');
+        } else {
+          setStatus('error');
+        }
       } catch (error) {
         console.error('Failed to wake up backend:', error);
         setStatus('error');

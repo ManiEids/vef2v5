@@ -3,6 +3,7 @@
 import { Category, Question, Answer } from './api-types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+console.log('clientApi: API_BASE_URL =', API_BASE_URL);  // Added log
 
 // Helper to normalize category data for frontend consumption
 const normalizeCategory = (category: any): Category => ({
@@ -31,13 +32,12 @@ const normalizeAnswer = (answer: any): Answer => ({
 });
 
 export async function getCategories(): Promise<Category[]> {
-  const response = await fetch(`${API_BASE_URL}/categories`);
-  
+  console.log("Fetching categories from", API_BASE_URL); // Added logging
+  const response = await fetch(`${API_BASE_URL}/categories`, { cache: "no-store" }); // updated
   if (!response.ok) {
     throw new Error(`Failed to fetch categories: ${response.status}`);
   }
   
-  // Already matches our data model since backend returns title, not name
   return await response.json();
 }
 
