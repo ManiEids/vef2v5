@@ -12,7 +12,7 @@ export function Layout({ children }: LayoutProps) {
         <nav className="flex flex-wrap items-center justify-between">
           <div className="space-card p-4 rounded-lg mb-4 w-full md:w-auto">
             <Link href="/" className="text-2xl font-bold text-glow text-blue-300">
-              Space Quiz
+              verkefni 4 - vefforritun 2 - mani - quiz
             </Link>
           </div>
           

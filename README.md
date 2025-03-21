@@ -1,4 +1,4 @@
-# Vefforritun 2, 2025 - Verkefni 4
+# verkefni 4 - vefforritun 2 - mani - quiz
 
 React framendi fyrir spurningakerfi.
 

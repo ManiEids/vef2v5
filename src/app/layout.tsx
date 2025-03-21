@@ -4,7 +4,7 @@ import { BackendWaker } from '@/components/BackendWaker';
 import { StarsBackground } from '@/components/StarsBackground';
 
 export const metadata: Metadata = {
-  title: 'Space Quiz - Verkefni 4',
+  title: 'verkefni 4 - vefforritun 2 - mani - quiz',
   description: 'React framendi fyrir spurningakerfi með geimþema',
 };
 
