@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Layout } from '@/components/Layout';
 import { QuestionForm } from '@/components/forms/QuestionForm';
-import { Category, Question, getQuestion, updateQuestion, getCategories } from '@/services/api';
+import { Category, Question } from '@/services/api-types';
+import { api } from '@/services/simpleApi'; // Use the simplified API
 
 interface EditQuestionPageProps {
   params: {
@@ -22,9 +23,10 @@ export default function EditQuestionPage({ params }: EditQuestionPageProps) {
   useEffect(() => {
     async function loadData() {
       try {
+        // Use the simplified API
         const [questionData, categoriesData] = await Promise.all([
-          getQuestion(params.id),
-          getCategories()
+          api.questions.getById(params.id),
+          api.categories.getAll()
         ]);
         
         setQuestion(questionData);
@@ -45,19 +47,11 @@ export default function EditQuestionPage({ params }: EditQuestionPageProps) {
     if (!question) return;
     
     try {
-      await updateQuestion(
-        question.id,
-        text,
-        categoryId,
-        answers.map(a => ({
-          id: a.id,
-          text: a.text,
-          correct: a.correct
-        }))
-      );
+      // Use the simplified API helper which handles field mapping
+      await api.questions.update(question.id, text, categoryId, answers);
       
       router.push('/admin/questions');
-      return Promise.resolve();
+      return Promise.resolve();t,  // Map 'text' from form to 'answer' for API
     } catch (error) {
       return Promise.reject(error);
     }
