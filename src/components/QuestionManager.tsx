@@ -138,12 +138,18 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     setError(null); // Clear any previous errors
     try {
       console.log(`🗑️ Attempting to delete question ID: ${question.id}`);
+      
       // First update the UI immediately to provide feedback
-      setQuestions(questions.filter(q => q.id !== question.id));
+      setQuestions(prev => prev.filter(q => q.id !== question.id));
       
       // Then perform the actual deletion
-      await api.questions.delete(question.id);
-      console.log(`✅ Successfully deleted question ID: ${question.id}`);
+      const result = await api.questions.delete(question.id);
+      
+      if (result.success) {
+        console.log(`✅ Successfully deleted question ID: ${question.id}`);
+      } else {
+        throw new Error('Delete operation failed');
+      }
     } catch (err) {
       // If there was an error, refresh the list to restore state
       console.error(`❌ Failed to delete question ID: ${question.id}:`, err);
@@ -181,10 +187,10 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       if (isEditing && selectedQuestion) {
         console.log(`✏️ Updating question ID: ${selectedQuestion.id}`, formData);
         
-        // Ensure answers are formatted correctly
+        // Ensure answers are formatted correctly for the API
         const formattedAnswers = formData.answers.map(a => {
           const answer = {
-            answer: a.text,
+            answer: a.text, // Map text to answer field
             correct: a.correct,
             questionId: selectedQuestion.id
           };
@@ -197,21 +203,6 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         
         console.log('Formatted answers for update:', formattedAnswers);
         
-        // Update UI immediately with optimistic update
-        const optimisticUpdate = {
-          ...selectedQuestion,
-          question: formData.question,
-          answers: formattedAnswers.map(a => ({
-            id: 'id' in a ? Number(a.id) : Math.random(), // Ensure id is always a number
-            answer: a.answer,
-            correct: a.correct,
-            questionId: selectedQuestion.id
-          }))
-        };
-        
-        // Apply optimistic update to UI
-        setQuestions(questions.map(q => q.id === selectedQuestion.id ? optimisticUpdate : q));
-        
         // Make API call
         const updatedQuestion = await api.questions.update(
           selectedQuestion.id,
@@ -222,18 +213,20 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         
         console.log(`✅ Question updated successfully:`, updatedQuestion);
         
-        // Update with server response to get real IDs, etc.
+        // Refresh questions from server
         await loadQuestions(categorySlug);
       } else {
-        // Create question - fix the incomplete implementation
+        // Create question
         console.log(`➕ Creating new question:`, formData);
         console.log(`Using category ID:`, formData.categoryId);
         
-        // Format answers for the API
+        // Format answers for the API correctly
         const formattedAnswers = formData.answers.map(a => ({
-          answer: a.text,
+          answer: a.text, // Map 'text' to 'answer' as expected by API
           correct: a.correct
         }));
+        
+        console.log('Formatted answers for create:', formattedAnswers);
         
         // Make the API call
         const newQuestion = await api.questions.create(
@@ -244,7 +237,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         
         console.log(`✅ Question created successfully:`, newQuestion);
         
-        // Add the new question to the list and refresh from server to get complete data
+        // Refresh questions from server
         await loadQuestions(categorySlug);
       }
       resetForm();
@@ -269,7 +262,6 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       <h2 className="text-2xl font-bold mb-4">
         {isEditing ? 'Edit Question' : 'Add New Question'}
       </h2>
-      
       {error && (
         <div className="bg-red-100 text-red-800 p-3 rounded mb-4">
           {error}
@@ -293,8 +285,8 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
             <label className="block font-medium">Answers:</label>
             <button 
               type="button" 
-              onClick={addAnswer} 
               className="px-2 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+              onClick={addAnswer} 
             >
               + Add Answer
             </button>
@@ -316,9 +308,9 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
                 required 
               />
               <button 
-                type="button"
-                onClick={() => removeAnswer(index)}
+                type="button" 
                 className="px-2 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+                onClick={() => removeAnswer(index)}
                 disabled={formData.answers.length <= 2}
                 title={formData.answers.length <= 2 ? "Minimum 2 answers required" : "Remove answer"}
               >
@@ -331,7 +323,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         
         <div className="flex space-x-2">
           <button 
-            type="submit"
+            type="submit" 
             className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
             disabled={loading}
           >
@@ -339,9 +331,9 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
           </button>
           {isEditing && (
             <button 
-              type="button"
-              onClick={resetForm}
+              type="button" 
               className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+              onClick={resetForm}
             >
               Cancel
             </button>
@@ -366,14 +358,16 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
               </ul>
               <div className="mt-3 flex space-x-2">
                 <button 
-                  onClick={() => editQuestion(q)}
+                  type="button" 
                   className="bg-blue-500 text-white py-1 px-3 rounded text-sm hover:bg-blue-600"
+                  onClick={() => editQuestion(q)}
                 >
                   Edit
                 </button>
                 <button 
-                  onClick={() => deleteQuestion(q)}
+                  type="button" 
                   className="bg-red-500 text-white py-1 px-3 rounded text-sm hover:bg-red-600"
+                  onClick={() => deleteQuestion(q)}
                 >
                   Delete
                 </button>

@@ -153,7 +153,7 @@ export const questionApi = {
   create: (categoryId: number, questionText: string, formAnswers: any[]) => {
     // Transform answers from form format to API format
     const answers = formAnswers.map(a => ({
-      answer: a.text,      // Map form's 'text' to API's 'answer'
+      answer: a.answer || a.text, // Accept either answer or text field
       correct: a.correct
     }));
     
