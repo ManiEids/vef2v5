@@ -37,13 +37,8 @@ export async function getCategories(): Promise<Category[]> {
     throw new Error(`Failed to fetch categories: ${response.status}`);
   }
   
-  const result = await response.json();
-  const categoriesData = result.data ? result.data : result;
-  
-  // Transform data to match frontend expectations
-  return Array.isArray(categoriesData) 
-    ? categoriesData.map(normalizeCategory) 
-    : [];
+  // Already matches our data model since backend returns title, not name
+  return await response.json();
 }
 
 export async function getCategory(slug: string): Promise<Category> {
