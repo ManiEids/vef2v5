@@ -171,14 +171,12 @@ export const questionApi = {
     });
   },
   
-  // Update question - improved version that works with updated backend
+  // Update question - improved version with more robust error handling
   update: (id: string | number, questionText: string, categoryId: number, formAnswers: any[]) => {
-    // Map answers to the format expected by the API without IDs
-    // The backend will delete and recreate all answers anyway
+    // Map answers with absolutely minimal structure
     const answers = formAnswers.map(a => ({
       answer: a.text || a.answer,
       correct: a.correct
-      // Explicitly NOT including any IDs to avoid conflicts
     }));
     
     const requestData = { 
@@ -187,12 +185,17 @@ export const questionApi = {
       answers
     };
     
-    console.log('🔍 Updating question - Request structure:', JSON.stringify(requestData, null, 2));
+    console.log('🔍 Update question request structure:', JSON.stringify(requestData, null, 2));
+    console.log(`⚠️ IMPORTANT: Make sure your backend PATCH handler for /question/${id} deletes and recreates answers`);
     
-    return apiFetch(`/question/${id}`, {
+    // Try to use a more unique URL to avoid any potential caching
+    const uniqueEndpoint = `/question/${id}?_t=${Date.now()}`;
+    
+    return apiFetch(uniqueEndpoint, {
       method: 'PATCH',
       body: JSON.stringify(requestData),
       headers: {
+        'Content-Type': 'application/json',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache'
       }

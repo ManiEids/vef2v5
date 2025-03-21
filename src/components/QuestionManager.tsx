@@ -44,13 +44,34 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     try {
       console.log(`📋 Loading questions for category: ${slug}`);
       
-      // Add a timestamp parameter to bust any cache
-      const timestamp = new Date().getTime();
+      // Enhanced cache busting with more random value
+      const timestamp = Date.now() + Math.random().toString(36).substring(2, 10);
       
-      // Use the api helper instead of direct apiFetch function
-      const questionsData = await api.questions.getByCategory(`${slug}?t=${timestamp}`);
+      try {
+        // Use the API's method to get questions by category
+        const questionsData = await api.questions.getByCategory(slug);
+        console.log(`✅ Successfully loaded ${questionsData.length} questions`);
+        setQuestions(questionsData);
+        return;
+      } catch (e) {
+        console.log('Falling back to direct API call');
+      }
       
-      console.log(`✅ Successfully loaded ${questionsData.length} questions`);
+      // If the above fails, try direct fetch as fallback
+      const apiUrl = `/api/questions/category/${slug}?t=${timestamp}`;
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error fetching questions: ${response.status}`);
+      }
+      
+      const questionsData = await response.json();
+      console.log(`✅ Successfully loaded ${questionsData.length} questions (with timestamp: ${timestamp})`);
       setQuestions(questionsData);
     } catch (err) {
       console.error(`❌ Failed to load questions for ${slug}:`, err);
@@ -85,26 +106,34 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         // Format answers correctly for the API
         const formattedAnswers = formData.answers.map((a: any) => ({
           answer: a.text,
-          correct: a.correct,
-          // Do not include ID as the backend will recreate all answers
+          correct: a.correct
+          // Completely removing IDs to avoid any conflicts
         }));
         
-        console.log('Formatted answers for update:', formattedAnswers);
+        console.log('Formatted answers for update (removing all IDs):', formattedAnswers);
         
-        // Make the API call - backend now handles answer updates properly
-        const updatedQuestion = await api.questions.update(
-          selectedQuestion.id,
-          formData.question,
-          formData.categoryId,
-          formattedAnswers
-        );
-        
-        console.log(`✅ Question updated successfully:`, updatedQuestion);
-        
-        // Force a reload with a slight delay to ensure backend has completed its work
-        setTimeout(() => {
-          loadQuestions(categorySlug);
-        }, 500);
+        try {
+          // Make the API call with the updated request structure
+          const updatedQuestion = await api.questions.update(
+            selectedQuestion.id,
+            formData.question,
+            formData.categoryId,
+            formattedAnswers
+          );
+          
+          console.log(`✅ Question update response:`, updatedQuestion);
+          
+          // Force a reload with increased delay to ensure backend has completed its work
+          setLoading(true); // Show loading state during the delay
+          setTimeout(async () => {
+            await loadQuestions(categorySlug);
+            setLoading(false);
+          }, 1000); // Increased to 1 second for more reliability
+          
+        } catch (updateError) {
+          console.error('Update request failed:', updateError);
+          throw updateError;
+        }
       } else {
         // Create new question - this works fine because POST /question handles answers
         console.log(`➕ Creating new question:`, formData);

@@ -139,7 +139,72 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  return handleProxyRequest(request, 'PATCH');
+  // Special handling for PATCH requests
+  const path = request.nextUrl.searchParams.get('path');
+  if (!path) {
+    console.error(`❌ Proxy Error: Missing path parameter`);
+    return NextResponse.json({ error: 'Path parameter is required' }, { status: 400 });
+  }
+
+  const fullUrl = `${API_BASE_URL}${path}`;
+  console.log(`🔄 Proxying PATCH request to: ${fullUrl}`);
+  
+  try {
+    // Get the request body
+    const bodyData = await request.json();
+    console.log(`📤 PATCH Body for ${path}:`, bodyData);
+    
+    const options: RequestInit = {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+      body: JSON.stringify(bodyData)
+    };
+    
+    const startTime = Date.now();
+    const response = await fetch(fullUrl, options);
+    const elapsedTime = Date.now() - startTime;
+    
+    console.log(`📥 Proxy received PATCH response in ${elapsedTime}ms with status: ${response.status}`);
+    console.log(`📋 PATCH Response headers:`, Object.fromEntries(response.headers.entries()));
+
+    // Special handling for error responses
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ PATCH error ${response.status} response:`, errorText);
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        return NextResponse.json(errorData, { status: response.status });
+      } catch (e) {
+        return NextResponse.json({ 
+          error: errorText || `Server responded with status ${response.status}` 
+        }, { status: response.status });
+      }
+    }
+
+    // For successful responses, parse and return
+    try {
+      const responseText = await response.text();
+      if (!responseText) {
+        return NextResponse.json({ success: true });
+      }
+      
+      const data = JSON.parse(responseText);
+      return NextResponse.json(data);
+    } catch (e) {
+      return NextResponse.json({ success: true });
+    }
+  } catch (error) {
+    console.error(`❌ Proxy error for PATCH ${path}:`, error);
+    return NextResponse.json(
+      { error: `Failed to update data: ${error instanceof Error ? error.message : 'Unknown error'}` },
+      { status: 500 }
+    );
+  }
 }
 
 export async function DELETE(request: NextRequest) {
