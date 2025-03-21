@@ -29,9 +29,9 @@ export default function AdminCategoriesPage() {
     }
   }
 
-  const handleCreateCategory = async (title: string) => {
+  const handleCreateCategory = async (name: string) => {
     try {
-      const newCategory = await createCategory(title);
+      const newCategory = await createCategory(name);
       setCategories([...categories, newCategory]);
       return Promise.resolve();
     } catch (error) {
@@ -39,11 +39,11 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const handleUpdateCategory = async (title: string) => {
+  const handleUpdateCategory = async (name: string) => {
     if (!editingCategory) return;
     
     try {
-      const updatedCategory = await updateCategory(editingCategory.slug, title);
+      const updatedCategory = await updateCategory(editingCategory.slug, name);
       setCategories(categories.map((c: Category) => 
         c.id === updatedCategory.id ? updatedCategory : c
       ));
@@ -74,11 +74,11 @@ export default function AdminCategoriesPage() {
       
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">
-          {editingCategory ? 'Breyta flokk' : 'Búa til nýjan flokk'}
+          {editingCategory ? 'Edit category' : 'Create new category'}
         </h2>
         <CategoryForm 
           onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory} 
-          initialTitle={editingCategory?.title}
+          initialName={editingCategory?.name}
         />
         {editingCategory && (
           <button
@@ -103,7 +103,7 @@ export default function AdminCategoriesPage() {
           <ul className="space-y-2">
             {categories.map((category: Category) => (
               <li key={category.id} className="bg-white rounded shadow p-4 flex justify-between items-center">
-                <span>{category.title}</span>
+                <span>{category.name}</span>
                 <div className="space-x-2">
                   <button 
                     onClick={() => setEditingCategory(category)}

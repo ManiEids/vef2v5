@@ -6,28 +6,28 @@ interface QuestionListProps {
 }
 
 export function QuestionList({ questions }: QuestionListProps) {
-  const [answeredQuestions, setAnsweredQuestions] = useState<Record<string, string>>({});
-  const [feedback, setFeedback] = useState<Record<string, boolean | null>>({});
+  const [answeredQuestions, setAnsweredQuestions] = useState<Record<string | number, string | number>>({});
+  const [feedback, setFeedback] = useState<Record<string | number, boolean | null>>({});
 
   if (questions.length === 0) {
     return <p>No questions found in this category.</p>;
   }
 
-  const handleAnswerSelect = (questionId: string, answerId: string) => {
+  const handleAnswerSelect = (questionId: string | number, answerId: string | number) => {
     setAnsweredQuestions({
       ...answeredQuestions,
       [questionId]: answerId,
     });
   };
 
-  const checkAnswer = (questionId: string) => {
+  const checkAnswer = (questionId: string | number) => {
     const selectedAnswerId = answeredQuestions[questionId];
     if (!selectedAnswerId) return;
     
     const question = questions.find(q => q.id === questionId);
     if (!question) return;
     
-    const isCorrect = question.answers.find(a => a.id === selectedAnswerId)?.isCorrect;
+    const isCorrect = question.answers.find(a => a.id === selectedAnswerId)?.correct;
     
     setFeedback({
       ...feedback,
@@ -46,14 +46,14 @@ export function QuestionList({ questions }: QuestionListProps) {
               <div key={answer.id} className="flex items-center">
                 <input
                   type="radio"
-                  id={answer.id}
+                  id={`answer-${answer.id}`}
                   name={`question-${question.id}`}
                   value={answer.id}
                   onChange={() => handleAnswerSelect(question.id, answer.id)}
                   className="mr-2"
                   disabled={feedback[question.id] !== undefined}
                 />
-                <label htmlFor={answer.id}>{answer.text}</label>
+                <label htmlFor={`answer-${answer.id}`}>{answer.text}</label>
               </div>
             ))}
           </div>

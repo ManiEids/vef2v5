@@ -41,17 +41,18 @@ export default function EditQuestionPage({ params }: EditQuestionPageProps) {
     loadData();
   }, [params.id]);
 
-  const handleUpdateQuestion = async (text: string, answers: any[]) => {
+  const handleUpdateQuestion = async (categoryId: number, text: string, answers: any[]) => {
     if (!question) return;
     
     try {
       await updateQuestion(
         question.id,
         text,
+        categoryId,
         answers.map(a => ({
           id: a.id,
           text: a.text,
-          isCorrect: a.isCorrect
+          correct: a.correct
         }))
       );
       
@@ -88,12 +89,17 @@ export default function EditQuestionPage({ params }: EditQuestionPageProps) {
 
   return (
     <Layout>
-      <h1 className="text-3xl font-bold mb-6">Breyta spurningu</h1>
+      <h1 className="text-3xl font-bold mb-6">Edit Question</h1>
       
       <QuestionForm
         categories={categories}
+        selectedCategoryId={question.categoryId || question.category?.id}
         initialText={question.text}
-        initialAnswers={question.answers}
+        initialAnswers={question.answers.map(a => ({
+          id: a.id,
+          text: a.text,
+          correct: a.correct
+        }))}
         onSubmit={handleUpdateQuestion}
       />
       

@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Answer, Category } from '@/services/api';
 
-// Skilgreining á gerð svars í formi
+// Skillgreining á gerð svars í formi
 interface AnswerFormData {
-  id?: string;
+  id?: number;
   text: string;
-  isCorrect: boolean;
+  correct: boolean;
 }
 
 interface QuestionFormProps {
-  onSubmit: (text: string, answers: AnswerFormData[]) => Promise<void>;
+  onSubmit: (categoryId: number, text: string, answers: AnswerFormData[]) => Promise<void>;
   categories: Category[];
-  selectedCategorySlug?: string;
+  selectedCategoryId?: number;
   initialText?: string;
   initialAnswers?: AnswerFormData[];
 }
@@ -19,16 +19,16 @@ interface QuestionFormProps {
 export function QuestionForm({ 
   onSubmit, 
   categories, 
-  selectedCategorySlug,
+  selectedCategoryId,
   initialText = '', 
   initialAnswers = [
-    { text: '', isCorrect: true },
-    { text: '', isCorrect: false },
-    { text: '', isCorrect: false },
-    { text: '', isCorrect: false }
+    { text: '', correct: true },
+    { text: '', correct: false },
+    { text: '', correct: false },
+    { text: '', correct: false }
   ]
 }: QuestionFormProps) {
-  const [categorySlug, setCategorySlug] = useState(selectedCategorySlug || '');
+  const [categoryId, setCategoryId] = useState<number | undefined>(selectedCategoryId);
   const [text, setText] = useState(initialText);
   const [answers, setAnswers] = useState<AnswerFormData[]>(initialAnswers);
   const [error, setError] = useState<string | null>(null);
@@ -38,11 +38,11 @@ export function QuestionForm({
     const updatedAnswers = [...answers];
     updatedAnswers[index] = { ...updatedAnswers[index], [field]: value };
 
-    // Ef þetta svar er sett sem rétt, stillum öll önnur svör sem röng
-    if (field === 'isCorrect' && value === true) {
+    // If this answer is set as correct, set all other answers as incorrect
+    if (field === 'correct' && value === true) {
       updatedAnswers.forEach((answer, i) => {
         if (i !== index) {
-          updatedAnswers[i] = { ...answer, isCorrect: false };
+          updatedAnswers[i] = { ...answer, correct: false };
         }
       });
     }
@@ -51,7 +51,7 @@ export function QuestionForm({
   };
 
   const addAnswer = () => {
-    setAnswers([...answers, { text: '', isCorrect: false }]);
+    setAnswers([...answers, { text: '', correct: false }]);
   };
 
   const removeAnswer = (index: number) => {
@@ -63,8 +63,8 @@ export function QuestionForm({
     const updatedAnswers = answers.filter((_, i) => i !== index);
     
     // Ef við fjarlægðum rétta svarið, stillum fyrsta sem rétt
-    if (answers[index].isCorrect) {
-      updatedAnswers[0] = { ...updatedAnswers[0], isCorrect: true };
+    if (answers[index].correct) {
+      updatedAnswers[0] = { ...updatedAnswers[0], correct: true };
     }
     
     setAnswers(updatedAnswers);
@@ -74,44 +74,49 @@ export function QuestionForm({
     e.preventDefault();
     setError(null);
     
-    // Einföld validation
+    // Simple validation
     if (text.trim() === '') {
-      setError('Spurning má ekki vera tóm');
+      setError('Question cannot be empty');
       return;
     }
     
     if (answers.some(answer => answer.text.trim() === '')) {
-      setError('Svör mega ekki vera tóm');
+      setError('Answers cannot be empty');
       return;
     }
     
-    if (!answers.some(answer => answer.isCorrect)) {
-      setError('Það verður að vera að minnsta kosti eitt rétt svar');
+    if (!answers.some(answer => answer.correct)) {
+      setError('There must be at least one correct answer');
       return;
     }
     
-    if (!selectedCategorySlug && !categorySlug) {
-      setError('Veldu flokk fyrir spurninguna');
+    if (!selectedCategoryId && !categoryId) {
+      setError('Please select a category for the question');
       return;
     }
 
     setLoading(true);
 
     try {
-      await onSubmit(text, answers);
+      const activeCategoryId = selectedCategoryId || categoryId;
+      if (!activeCategoryId) {
+        throw new Error('Category ID is required');
+      }
       
-      // Ef þetta er ný spurning, hreinsum formið
+      await onSubmit(activeCategoryId, text, answers);
+      
+      // If this is a new question, clear the form
       if (!initialText) {
         setText('');
         setAnswers([
-          { text: '', isCorrect: true },
-          { text: '', isCorrect: false },
-          { text: '', isCorrect: false },
-          { text: '', isCorrect: false }
+          { text: '', correct: true },
+          { text: '', correct: false },
+          { text: '', correct: false },
+          { text: '', correct: false }
         ]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Villa kom upp');
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -125,22 +130,22 @@ export function QuestionForm({
         </div>
       )}
       
-      {!selectedCategorySlug && (
+      {!selectedCategoryId && (
         <div>
           <label htmlFor="category" className="block mb-1 font-medium">
-            Flokkur
+            Category
           </label>
           <select
             id="category"
-            value={categorySlug}
-            onChange={(e) => setCategorySlug(e.target.value)}
+            value={categoryId || ''}
+            onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : undefined)}
             className="w-full px-3 py-2 border rounded"
             required
           >
-            <option value="">Veldu flokk</option>
+            <option value="">Select a category</option>
             {categories.map((category) => (
-              <option key={category.id} value={category.slug}>
-                {category.title}
+              <option key={category.id} value={category.id}>
+                {category.name}
               </option>
             ))}
           </select>
@@ -169,8 +174,8 @@ export function QuestionForm({
           <div key={index} className="flex items-center space-x-2 p-3 border rounded">
             <input
               type="checkbox"
-              checked={answer.isCorrect}
-              onChange={(e) => handleAnswerChange(index, 'isCorrect', e.target.checked)}
+              checked={answer.correct}
+              onChange={(e) => handleAnswerChange(index, 'correct', e.target.checked)}
               className="mr-2"
             />
             <input

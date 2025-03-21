@@ -22,7 +22,7 @@ export function CategoryList({ categories }: CategoryListProps) {
             href={`/categories/${category.slug}`}
             className="text-lg font-semibold text-blue-600 hover:text-blue-800"
           >
-            {category.title}
+            {category.name} {/* Changed from title to name */}
           </Link>
         </li>
       ))}

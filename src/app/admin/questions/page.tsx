@@ -54,18 +54,14 @@ export default function AdminQuestionsPage() {
     }
   }, [selectedCategory]);
 
-  const handleCreateQuestion = async (text: string, answers: any[]) => {
-    if (!selectedCategory) {
-      throw new Error('Veldu flokk fyrst');
-    }
-    
+  const handleCreateQuestion = async (categoryId: number, text: string, answers: any[]) => {
     try {
       const newQuestion = await createQuestion(
-        selectedCategory,
+        categoryId,
         text,
         answers.map(a => ({
           text: a.text,
-          isCorrect: a.isCorrect
+          correct: a.correct
         }))
       );
       
@@ -93,7 +89,7 @@ export default function AdminQuestionsPage() {
           <option value="">Veldu flokk</option>
           {categories.map((category) => (
             <option key={category.id} value={category.slug}>
-              {category.title}
+              {category.name} {/* Change from category.title */}
             </option>
           ))}
         </select>
@@ -101,10 +97,10 @@ export default function AdminQuestionsPage() {
       
       {selectedCategory && (
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Búa til nýja spurningu</h2>
+          <h2 className="text-xl font-semibold mb-4">Create new question</h2>
           <QuestionForm
             categories={categories}
-            selectedCategorySlug={selectedCategory}
+            selectedCategoryId={categories.find(c => c.slug === selectedCategory)?.id}
             onSubmit={handleCreateQuestion}
           />
         </div>
@@ -112,7 +108,7 @@ export default function AdminQuestionsPage() {
       
       {selectedCategory && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Núverandi spurningar í {categories.find(c => c.slug === selectedCategory)?.title}</h2>
+          <h2 className="text-xl font-semibold mb-4">Núverandi spurningar í {categories.find(c => c.slug === selectedCategory)?.name}</h2>
           
           {loading ? (
             <p>Sæki spurningar...</p>
@@ -137,8 +133,8 @@ export default function AdminQuestionsPage() {
                   </div>
                   <ul className="mt-2 ml-4 list-disc">
                     {question.answers.map(answer => (
-                      <li key={answer.id} className={answer.isCorrect ? 'font-bold text-green-600' : ''}>
-                        {answer.text} {answer.isCorrect ? '(Rétt svar)' : ''}
+                      <li key={answer.id} className={answer.correct ? 'font-bold text-green-600' : ''}>
+                        {answer.text} {answer.correct ? '(Rétt svar)' : ''}
                       </li>
                     ))}
                   </ul>

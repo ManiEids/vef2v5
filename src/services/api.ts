@@ -1,22 +1,24 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
 
-// Types
+// Types that match your backend structure
 export interface Category {
-  id: string;
-  title: string;
+  id: number;
+  name: string;
   slug: string;
 }
 
 export interface Answer {
-  id: string;
+  id: number;
   text: string;
-  isCorrect: boolean;
+  correct: boolean;
 }
 
 export interface Question {
-  id: string;
+  id: number;
   text: string;
   answers: Answer[];
+  category?: Category;
+  categoryId?: number;
 }
 
 // API functions
@@ -27,7 +29,9 @@ export async function getCategories(): Promise<Category[]> {
     throw new Error(`Failed to fetch categories: ${response.status}`);
   }
   
-  return response.json();
+  const result = await response.json();
+  // Handle paginated response from your backend
+  return result.data ? result.data : result;
 }
 
 export async function getCategory(slug: string): Promise<Category> {
@@ -45,26 +49,25 @@ export async function getCategory(slug: string): Promise<Category> {
 }
 
 export async function getQuestionsByCategory(slug: string): Promise<Question[]> {
-  const response = await fetch(`${API_BASE_URL}/categories/${slug}/questions`);
-  
-  if (response.status === 404) {
-    throw new Error('Category not found');
-  }
+  // Updated to match your actual endpoint structure from README
+  const response = await fetch(`${API_BASE_URL}/questions/category/${slug}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch questions: ${response.status}`);
   }
   
-  return response.json();
+  const result = await response.json();
+  return result.data ? result.data : result;
 }
 
-export async function createCategory(title: string): Promise<Category> {
-  const response = await fetch(`${API_BASE_URL}/categories`, {
+export async function createCategory(name: string): Promise<Category> {
+  // Updated to match your actual endpoint from README
+  const response = await fetch(`${API_BASE_URL}/category`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ title }),
+    body: JSON.stringify({ name }),
   });
   
   if (!response.ok) {
@@ -76,16 +79,21 @@ export async function createCategory(title: string): Promise<Category> {
 }
 
 export async function createQuestion(
-  categorySlug: string, 
+  categoryId: number, 
   text: string, 
   answers: Omit<Answer, 'id'>[]
 ): Promise<Question> {
-  const response = await fetch(`${API_BASE_URL}/categories/${categorySlug}/questions`, {
+  // Updated to match your actual endpoint from README
+  const response = await fetch(`${API_BASE_URL}/question`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ text, answers }),
+    body: JSON.stringify({ 
+      text, 
+      categoryId,
+      answers 
+    }),
   });
   
   if (!response.ok) {
@@ -97,7 +105,8 @@ export async function createQuestion(
 }
 
 export async function deleteCategory(slug: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/categories/${slug}`, {
+  // Updated to match your actual endpoint from README
+  const response = await fetch(`${API_BASE_URL}/category/${slug}`, {
     method: 'DELETE',
   });
   
@@ -107,13 +116,14 @@ export async function deleteCategory(slug: string): Promise<void> {
   }
 }
 
-export async function updateCategory(slug: string, title: string): Promise<Category> {
-  const response = await fetch(`${API_BASE_URL}/categories/${slug}`, {
+export async function updateCategory(slug: string, name: string): Promise<Category> {
+  // Updated to match your actual endpoint from README
+  const response = await fetch(`${API_BASE_URL}/category/${slug}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ title }),
+    body: JSON.stringify({ name }),
   });
   
   if (!response.ok) {
@@ -139,16 +149,22 @@ export async function getQuestion(id: string): Promise<Question> {
 }
 
 export async function updateQuestion(
-  id: string,
+  id: string | number,
   text: string,
-  answers: Array<Omit<Answer, 'id'> & { id?: string }>
+  categoryId: number,
+  answers: Array<Omit<Answer, 'id'> & { id?: number }>
 ): Promise<Question> {
-  const response = await fetch(`${API_BASE_URL}/questions/${id}`, {
+  // Updated to match your actual endpoint from README
+  const response = await fetch(`${API_BASE_URL}/question/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ text, answers }),
+    body: JSON.stringify({ 
+      text, 
+      categoryId,
+      answers 
+    }),
   });
   
   if (!response.ok) {
