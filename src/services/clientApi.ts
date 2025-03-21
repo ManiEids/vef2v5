@@ -1,9 +1,7 @@
 'use client';
 
 import { Category, Question, Answer } from './api-types';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-console.log('clientApi: API_BASE_URL =', API_BASE_URL);  // Added log
+import { getApiUrl } from './simpleApi'; // Import the helper function
 
 // Helper to normalize category data for frontend consumption
 const normalizeCategory = (category: any): Category => ({
@@ -32,9 +30,15 @@ const normalizeAnswer = (answer: any): Answer => ({
 });
 
 export async function getCategories(): Promise<Category[]> {
-  console.log("Fetching categories from", process.env.NEXT_PUBLIC_API_BASE_URL);
+  console.log("Fetching categories from client component");
+  
+  // Use our proxy helper function
+  const endpoint = '/categories';
+  const url = getApiUrl(endpoint);
+  console.log("Using URL:", url);
+  
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/categories`, { cache: "no-store" });
+    const response = await fetch(url, { cache: "no-store" });
     console.log("Response status:", response.status);
     if (!response.ok) {
       const errorBody = await response.text();
@@ -51,7 +55,11 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function getCategory(slug: string): Promise<Category> {
-  const response = await fetch(`${API_BASE_URL}/categories/${slug}`);
+  // Use our proxy helper function
+  const endpoint = `/categories/${slug}`;
+  const url = getApiUrl(endpoint);
+  
+  const response = await fetch(url);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch category: ${response.status}`);
@@ -62,9 +70,15 @@ export async function getCategory(slug: string): Promise<Category> {
 }
 
 export async function getQuestionsByCategory(slug: string): Promise<Question[]> {
-  console.log(`Fetching questions for category: ${slug} from ${process.env.NEXT_PUBLIC_API_BASE_URL}`);
+  console.log(`Fetching questions for category: ${slug}`);
+  
+  // Use our proxy helper function
+  const endpoint = `/questions/category/${slug}`;
+  const url = getApiUrl(endpoint);
+  console.log("Using URL:", url);
+  
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/questions/category/${slug}`);
+    const response = await fetch(url);
     console.log("Response status (questions):", response.status);
     if (!response.ok) {
       const errorBody = await response.text();
@@ -82,6 +96,3 @@ export async function getQuestionsByCategory(slug: string): Promise<Question[]> 
     throw error;
   }
 }
-
-// Update other client-side API functions using the same pattern
-// ...

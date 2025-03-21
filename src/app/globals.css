@@ -14,8 +14,9 @@ body {
       to bottom,
       rgb(var(--background-start-rgb)),
       rgb(var(--background-end-rgb))
-    ),
-    url('/stars-bg.png');
+    );
+  /* Remove the stars-bg.png reference or make it optional */
+  /* url('/stars-bg.png'); */
   min-height: 100vh;
   position: relative;
   z-index: 0;

@@ -7,7 +7,7 @@ const useProxy = process.env.NODE_ENV === 'production'; // Use proxy in producti
 console.log('API mode:', useProxy ? 'Using proxy to avoid CORS' : 'Direct API access');
 
 // Function to determine the right API URL based on environment
-function getApiUrl(endpoint: string): string {
+export function getApiUrl(endpoint: string): string {
   if (useProxy) {
     // In production, use our proxy API endpoint
     return `/api/proxy?path=${encodeURIComponent(endpoint)}`;
