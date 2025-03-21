@@ -171,23 +171,14 @@ export const questionApi = {
     });
   },
   
-  // Update question - improved version
+  // Update question - improved version that works with updated backend
   update: (id: string | number, questionText: string, categoryId: number, formAnswers: any[]) => {
-    // Ensure answers have the correct structure for API
-    const answers = formAnswers.map(a => {
-      // Base answer object with required fields
-      const answer: any = {
-        answer: a.text || a.answer, // Accept either text (from form) or answer
-        correct: a.correct
-      };
-      
-      // Only include ID for existing answers
-      if (a.id !== undefined) {
-        answer.id = a.id;
-      }
-      
-      return answer;
-    });
+    // Map answers to the format expected by the API
+    const answers = formAnswers.map(a => ({
+      answer: a.text || a.answer, // Accept either format
+      correct: a.correct,
+      // Don't include questionId here, the backend will handle that
+    }));
     
     const requestData = { 
       question: questionText, 
@@ -195,7 +186,7 @@ export const questionApi = {
       answers
     };
     
-    console.log('🔍 Improved updating question request structure:', JSON.stringify(requestData, null, 2));
+    console.log('🔍 Updating question - Request structure:', JSON.stringify(requestData, null, 2));
     
     return apiFetch(`/question/${id}`, {
       method: 'PATCH',
