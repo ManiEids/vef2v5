@@ -60,7 +60,7 @@ export default function AdminQuestionsPage() {
         categoryId,
         text,
         answers.map(a => ({
-          text: a.text,
+          answer: a.text, // Map to backend expected format
           correct: a.correct
         }))
       );
@@ -89,7 +89,7 @@ export default function AdminQuestionsPage() {
           <option value="">Veldu flokk</option>
           {categories.map((category) => (
             <option key={category.id} value={category.slug}>
-              {category.name} {/* This should be name, not title */}
+              {category.title} {/* Changed from name to title */}
             </option>
           ))}
         </select>
@@ -108,7 +108,7 @@ export default function AdminQuestionsPage() {
       
       {selectedCategory && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Núverandi spurningar í {categories.find(c => c.slug === selectedCategory)?.name}</h2>
+          <h2 className="text-xl font-semibold mb-4">Núverandi spurningar í {categories.find(c => c.slug === selectedCategory)?.title}</h2>
           
           {loading ? (
             <p>Sæki spurningar...</p>
@@ -123,7 +123,7 @@ export default function AdminQuestionsPage() {
               {questions.map(question => (
                 <li key={question.id} className="bg-white rounded shadow p-4">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium">{question.text}</h3>
+                    <h3 className="font-medium">{question.question}</h3> {/* Using question not text */}
                     <Link 
                       href={`/admin/questions/edit/${question.id}`}
                       className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -134,7 +134,8 @@ export default function AdminQuestionsPage() {
                   <ul className="mt-2 ml-4 list-disc">
                     {question.answers.map(answer => (
                       <li key={answer.id} className={answer.correct ? 'font-bold text-green-600' : ''}>
-                        {answer.text} {answer.correct ? '(Rétt svar)' : ''}
+                        {answer.answer} {/* Using answer not text */}
+                        {answer.correct ? ' (Rétt svar)' : ''}
                       </li>
                     ))}
                   </ul>

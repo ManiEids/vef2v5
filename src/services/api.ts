@@ -3,19 +3,19 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5
 // Types that match your backend structure
 export interface Category {
   id: number;
-  name: string;
+  title: string; // Backend uses 'title' not 'name'
   slug: string;
 }
 
 export interface Answer {
   id: number;
-  text: string;
+  answer: string; // Backend uses 'answer' not 'text'
   correct: boolean;
 }
 
 export interface Question {
   id: number;
-  text: string;
+  question: string; // Backend uses 'question' not 'text'
   answers: Answer[];
   category?: Category;
   categoryId?: number;
@@ -71,14 +71,14 @@ export async function getQuestionsByCategory(slug: string): Promise<Question[]> 
   return result.data ? result.data : result;
 }
 
-export async function createCategory(name: string): Promise<Category> {
+export async function createCategory(title: string): Promise<Category> {
   // Updated to match your actual endpoint from README
   const response = await fetch(`${API_BASE_URL}/category`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ title }), // Important: use title here, not name
   });
   
   if (!response.ok) {
@@ -91,7 +91,7 @@ export async function createCategory(name: string): Promise<Category> {
 
 export async function createQuestion(
   categoryId: number, 
-  text: string, 
+  question: string, // Backend uses 'question' not 'text'
   answers: Omit<Answer, 'id'>[]
 ): Promise<Question> {
   // Updated to match your actual endpoint from README
@@ -101,7 +101,7 @@ export async function createQuestion(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ 
-      text, 
+      question, // Important: use question here, not text
       categoryId,
       answers 
     }),
@@ -127,14 +127,14 @@ export async function deleteCategory(slug: string): Promise<void> {
   }
 }
 
-export async function updateCategory(slug: string, name: string): Promise<Category> {
+export async function updateCategory(slug: string, title: string): Promise<Category> {
   // Updated to match your actual endpoint from README
   const response = await fetch(`${API_BASE_URL}/category/${slug}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ title }), // Important: use title here, not name
   });
   
   if (!response.ok) {
@@ -161,7 +161,7 @@ export async function getQuestion(id: string): Promise<Question> {
 
 export async function updateQuestion(
   id: string | number,
-  text: string,
+  question: string, // Backend uses 'question' not 'text'
   categoryId: number,
   answers: Array<Omit<Answer, 'id'> & { id?: number }>
 ): Promise<Question> {
@@ -172,7 +172,7 @@ export async function updateQuestion(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ 
-      text, 
+      question, // Important: use question here, not text
       categoryId,
       answers 
     }),

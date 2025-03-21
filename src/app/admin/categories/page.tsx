@@ -29,7 +29,7 @@ export default function AdminCategoriesPage() {
     }
   }
 
-  const handleCreateCategory = async (title: string) => { // Changed from name
+  const handleCreateCategory = async (title: string) => {
     try {
       const newCategory = await createCategory(title);
       setCategories([...categories, newCategory]);
@@ -39,7 +39,7 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const handleUpdateCategory = async (title: string) => { // Changed from name
+  const handleUpdateCategory = async (title: string) => {
     if (!editingCategory) return;
     
     try {
@@ -78,7 +78,7 @@ export default function AdminCategoriesPage() {
         </h2>
         <CategoryForm 
           onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory} 
-          initialTitle={editingCategory?.title} // Changed from initialName to initialTitle
+          initialTitle={editingCategory?.title}
         />
         {editingCategory && (
           <button
@@ -103,7 +103,7 @@ export default function AdminCategoriesPage() {
           <ul className="space-y-2">
             {categories.map((category: Category) => (
               <li key={category.id} className="bg-white rounded shadow p-4 flex justify-between items-center">
-                <span>{category.name}</span>
+                <span>{category.title}</span> {/* Changed from name to title */}
                 <div className="space-x-2">
                   <button 
                     onClick={() => setEditingCategory(category)}

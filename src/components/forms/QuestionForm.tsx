@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import { Answer, Category } from '@/services/api';
 
-// Skillgreining á gerð svars í formi
+// Defining answer form data type
 interface AnswerFormData {
   id?: number;
-  text: string;
+  text: string;  // We use text in the form but map to answer when sending to API
   correct: boolean;
 }
 
@@ -147,7 +147,7 @@ export function QuestionForm({
             <option value="">Select a category</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
-                {category.name}
+                {category.title} {/* Changed from name to title */}
               </option>
             ))}
           </select>
