@@ -50,8 +50,27 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       try {
         // Use the API's method to get questions by category
         const questionsData = await api.questions.getByCategory(slug);
-        console.log(`✅ Successfully loaded ${questionsData.length} questions`);
-        setQuestions(questionsData);
+        console.log(`✅ Successfully loaded ${questionsData.length} questions (unfiltered)`);
+        
+        // Filter out invalid questions
+        const validQuestions = questionsData.filter(q => {
+          // Must have at least 2 answers
+          if (!q.answers || q.answers.length < 2) {
+            console.log(`⚠️ Filtered out question ID ${q.id}: insufficient answers`);
+            return false;
+          }
+          
+          // Must have at least one correct answer
+          if (!q.answers.some(a => a.correct)) {
+            console.log(`⚠️ Filtered out question ID ${q.id}: no correct answers`);
+            return false;
+          }
+          
+          return true;
+        });
+        
+        console.log(`✅ Displaying ${validQuestions.length} valid questions (filtered out ${questionsData.length - validQuestions.length} invalid ones)`);
+        setQuestions(validQuestions);
         return;
       } catch (e) {
         console.log('Falling back to direct API call');
@@ -230,6 +249,13 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       {error && (
         <div className="bg-red-100 text-red-800 p-3 rounded mb-4">
           {error}
+        </div>
+      )}
+      
+      {/* Warning about filtered questions */}
+      {questions.length > 0 && (
+        <div className="bg-yellow-100 text-yellow-800 p-3 rounded mb-4 text-sm">
+          <strong>Note:</strong> Only showing valid questions with at least 2 answers (including 1 correct answer).
         </div>
       )}
       
