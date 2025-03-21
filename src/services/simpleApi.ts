@@ -91,7 +91,7 @@ async function apiFetch(endpoint: string, options?: RequestInit) {
     // For DELETE requests, some APIs don't return content
     if (response.status === 204 || response.headers.get('content-length') === '0') {
       console.log(`✅ Success with no content for ${endpoint}`);
-      return { success: true };
+      return { success: true, status: response.status };  // Added status field
     }
     
     // Parse and log successful response

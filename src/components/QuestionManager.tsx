@@ -135,19 +135,21 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     if (!confirm('Are you sure you want to delete this question?')) return;
     
     setLoading(true);
+    setError(null); // Clear any previous errors
     try {
       console.log(`🗑️ Attempting to delete question ID: ${question.id}`);
+      // First update the UI immediately to provide feedback
+      setQuestions(questions.filter(q => q.id !== question.id));
+      
+      // Then perform the actual deletion
       await api.questions.delete(question.id);
       console.log(`✅ Successfully deleted question ID: ${question.id}`);
-      
-      // Refresh questions from the server to ensure UI is in sync
-      await loadQuestions(categorySlug);
-      
-      // Show success message
-      setError(null);
     } catch (err) {
+      // If there was an error, refresh the list to restore state
       console.error(`❌ Failed to delete question ID: ${question.id}:`, err);
-      setError('Failed to delete question');
+      setError('Failed to delete question, please try again');
+      // Refresh questions to restore the UI to the correct state
+      await loadQuestions(categorySlug);
     } finally {
       setLoading(false);
     }
@@ -179,16 +181,38 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       if (isEditing && selectedQuestion) {
         console.log(`✏️ Updating question ID: ${selectedQuestion.id}`, formData);
         
-        // Ensure answers are formatted exactly as the backend expects
+        // Ensure answers are formatted correctly
         const formattedAnswers = formData.answers.map(a => {
-          if ('id' in a) {
-            return { id: a.id, answer: a.text, correct: a.correct, questionId: selectedQuestion.id };
+          const answer = {
+            answer: a.text,
+            correct: a.correct,
+            questionId: selectedQuestion.id
+          };
+          
+          if ('id' in a && a.id) {
+            return { ...answer, id: a.id };
           }
-          return { answer: a.text, correct: a.correct, questionId: selectedQuestion.id };
+          return answer;
         });
         
         console.log('Formatted answers for update:', formattedAnswers);
         
+        // Update UI immediately with optimistic update
+        const optimisticUpdate = {
+          ...selectedQuestion,
+          question: formData.question,
+          answers: formattedAnswers.map(a => ({
+            id: 'id' in a ? Number(a.id) : Math.random(), // Ensure id is always a number
+            answer: a.answer,
+            correct: a.correct,
+            questionId: selectedQuestion.id
+          }))
+        };
+        
+        // Apply optimistic update to UI
+        setQuestions(questions.map(q => q.id === selectedQuestion.id ? optimisticUpdate : q));
+        
+        // Make API call
         const updatedQuestion = await api.questions.update(
           selectedQuestion.id,
           formData.question,
@@ -198,20 +222,29 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         
         console.log(`✅ Question updated successfully:`, updatedQuestion);
         
-        // Refresh questions from server instead of updating local state
+        // Update with server response to get real IDs, etc.
         await loadQuestions(categorySlug);
       } else {
-        // ...existing code for creating questions...
+        // Create question - fix the incomplete implementation
         console.log(`➕ Creating new question:`, formData);
         console.log(`Using category ID:`, formData.categoryId);
+        
+        // Format answers for the API
+        const formattedAnswers = formData.answers.map(a => ({
+          answer: a.text,
+          correct: a.correct
+        }));
+        
+        // Make the API call
         const newQuestion = await api.questions.create(
           formData.categoryId,
           formData.question,
-          formData.answers
+          formattedAnswers
         );
+        
         console.log(`✅ Question created successfully:`, newQuestion);
         
-        // Refresh questions from server
+        // Add the new question to the list and refresh from server to get complete data
         await loadQuestions(categorySlug);
       }
       resetForm();
@@ -219,6 +252,9 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       console.error(`❌ Failed to save question:`, err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to save question: ${errorMessage}`);
+      
+      // Refresh to restore state
+      await loadQuestions(categorySlug);
     } finally {
       setLoading(false);
     }

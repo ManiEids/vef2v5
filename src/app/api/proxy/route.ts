@@ -70,7 +70,13 @@ async function handleProxyRequest(request: NextRequest, method: string) {
     // If the response is 204 No Content, return an empty successful response
     if (response.status === 204) {
       console.log(`✅ 204 No Content response from ${path}`);
-      return NextResponse.json({ success: true }, { status: 204 });
+      // Just return an empty response with status 204 instead of trying to parse JSON
+      return new NextResponse(null, { 
+        status: 204,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
     }
 
     // For all other responses, try to parse as JSON, but handle cases where response might not be JSON
