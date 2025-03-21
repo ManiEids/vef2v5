@@ -6,6 +6,8 @@
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 0, 0, 30;
   --background-end-rgb: 10, 10, 60;
+  --card-bg-color: rgba(20, 20, 40, 0.8);
+  --card-border-color: rgba(150, 150, 255, 0.2);
 }
 
 body {
@@ -45,10 +47,11 @@ body {
 
 /* Card styling for space theme */
 .space-card {
-  background: rgba(20, 20, 40, 0.8);
-  border: 1px solid rgba(150, 150, 255, 0.2);
+  background: var(--card-bg-color);
+  border: 1px solid var(--card-border-color);
   box-shadow: 0 4px 20px rgba(80, 100, 255, 0.2);
   backdrop-filter: blur(5px);
+  color: rgb(var(--foreground-rgb)); /* Ensure text is white */
 }
 
 /* Button styling for space theme */
@@ -57,6 +60,7 @@ body {
   border: 1px solid rgba(150, 150, 255, 0.4);
   box-shadow: 0 2px 10px rgba(100, 100, 255, 0.3);
   transition: all 0.3s ease;
+  color: white; /* Ensure text is white */
 }
 
 .space-button:hover {
@@ -67,4 +71,37 @@ body {
 /* Custom text glow for headings */
 .text-glow {
   text-shadow: 0 0 10px rgba(150, 150, 255, 0.8);
+}
+
+/* Add contrast utility classes */
+.text-light {
+  color: white !important;
+}
+
+.text-dark {
+  color: #1a1a2e !important;
+}
+
+/* Form elements with proper contrast */
+input, textarea, select {
+  color: #1a1a2e;
+  background-color: white;
+}
+
+/* Ensure container backgrounds have proper contrast with text */
+.bg-white, .bg-gray-100, .bg-gray-200 {
+  color: #1a1a2e;
+}
+
+.bg-gray-700, .bg-gray-800, .bg-gray-900, .bg-black {
+  color: white;
+}
+
+/* Space themed containers with proper text contrast */
+.content-container {
+  background: rgba(30, 30, 60, 0.7);
+  border-radius: 0.5rem;
+  border: 1px solid rgba(150, 150, 255, 0.2);
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
