@@ -18,33 +18,97 @@ export function getApiUrl(endpoint: string): string {
   }
 }
 
-// Unified fetch wrapper with error handling
+// Enhanced logging helper
+const logEndpointActivity = (action: string, endpoint: string, data?: any) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] 🔄 ${action}: ${endpoint}`, data ? data : '');
+};
+
+// Unified fetch wrapper with enhanced error handling and detailed logging
 async function apiFetch(endpoint: string, options?: RequestInit) {
   const url = getApiUrl(endpoint);
-  console.log(`Fetching: ${url} (${useProxy ? 'via proxy' : 'direct'})`);
+  const method = options?.method || 'GET';
+  
+  // Log the request details
+  logEndpointActivity(`${method} Request`, endpoint);
+  
+  // Show request body for debugging if present
+  if (options?.body) {
+    try {
+      const bodyData = JSON.parse(options.body as string);
+      console.log(`📤 Request Body for ${endpoint}:`, bodyData);
+    } catch (e) {
+      console.log(`📤 Request Body (non-JSON):`, options.body);
+    }
+  }
   
   try {
-    const response = await fetch(url, options);
+    // Add explicit no-cache headers for mutation operations
+    const finalOptions = {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        ...options?.headers,
+      }
+    };
+    
+    // Show full URL being fetched
+    console.log(`🔗 Full URL: ${url} (${useProxy ? 'via proxy' : 'direct'})`);
+    
+    const response = await fetch(url, finalOptions);
+    
+    // Log detailed response info
+    console.log(`📥 Response from ${endpoint}:`, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+    });
     
     // Handle 404 specially
     if (response.status === 404) {
+      console.error(`❌ 404 Not Found: ${endpoint}`);
       throw new Error('Resource not found');
     }
     
     // Handle other errors
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+      const errorText = await response.text();
+      console.error(`❌ Error Response Text: ${errorText}`);
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+        console.error(`❌ Parsed Error Data:`, errorData);
+      } catch (e) {
+        errorData = { message: errorText || 'Unknown error' };
+        console.error(`❌ Failed to parse error as JSON`);
+      }
+      
       throw new Error(errorData.message || `API error: ${response.status}`);
     }
     
-    console.log(`API response from ${endpoint}: status=${response.status}`);
-    return await response.json();
+    // For DELETE requests, some APIs don't return content
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      console.log(`✅ Success with no content for ${endpoint}`);
+      return { success: true };
+    }
+    
+    // Parse and log successful response
+    const responseData = await response.json();
+    console.log(`✅ Successful ${method} response data:`, responseData);
+    return responseData;
   } catch (error) {
-    console.error(`API error for ${endpoint}:`, error);
+    console.error(`❌ API ERROR for ${endpoint}:`, error);
     
     // Enhanced error logging
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      console.error('Network error - possible causes: CORS issues, network connectivity, or server down');
+      console.error(`🔥 Network error - possible causes: 
+        1. CORS issues (check browser console for CORS errors)
+        2. Network connectivity issues
+        3. Backend server is down or sleeping
+        4. Invalid URL: ${url}
+      `);
     }
     
     throw error;
@@ -59,17 +123,15 @@ export const categoryApi = {
   // Get single category by slug
   getBySlug: (slug: string) => apiFetch(`/categories/${slug}`),
   
-  // Create new category
+  // Create new category - Notice this matches your listed endpoint
   create: (title: string) => apiFetch('/category', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title })
   }),
   
   // Update existing category
   update: (slug: string, title: string) => apiFetch(`/category/${slug}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title })
   }),
   
@@ -87,7 +149,7 @@ export const questionApi = {
   // Get single question
   getById: (id: string | number) => apiFetch(`/questions/${id}`),
   
-  // Create question (automatically maps form fields to API fields)
+  // Create question (using /question not /questions)
   create: (categoryId: number, questionText: string, formAnswers: any[]) => {
     // Transform answers from form format to API format
     const answers = formAnswers.map(a => ({
@@ -95,18 +157,21 @@ export const questionApi = {
       correct: a.correct
     }));
     
-    return apiFetch('/question', {
+    const requestData = { 
+      question: questionText, 
+      categoryId,
+      answers
+    };
+    
+    console.log('🔍 Creating question - Request structure:', JSON.stringify(requestData, null, 2));
+    
+    return apiFetch('/question', { // Endpoint should be /question not /questions
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        question: questionText, 
-        categoryId,
-        answers
-      })
+      body: JSON.stringify(requestData)
     });
   },
   
-  // Update question (automatically maps form fields to API fields)
+  // Update question
   update: (id: string | number, questionText: string, categoryId: number, formAnswers: any[]) => {
     // Transform answers from form format to API format
     const answers = formAnswers.map(a => ({
@@ -115,11 +180,17 @@ export const questionApi = {
       correct: a.correct
     }));
     
-    return apiFetch(`/question/${id}`, {
+    console.log('Updating question with data:', {
+      id,
+      question: questionText,
+      categoryId,
+      answers
+    });
+    
+    return apiFetch(`/question/${id}`, { // Endpoint should be /question/:id
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        question: questionText,  // Map text to question
+        question: questionText,
         categoryId,
         answers
       })
@@ -127,7 +198,7 @@ export const questionApi = {
   },
   
   // Delete question
-  delete: (id: string | number) => apiFetch(`/question/${id}`, {
+  delete: (id: string | number) => apiFetch(`/question/${id}`, { // Endpoint should be /question/:id
     method: 'DELETE'
   })
 };
