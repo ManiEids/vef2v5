@@ -173,11 +173,12 @@ export const questionApi = {
   
   // Update question - improved version that works with updated backend
   update: (id: string | number, questionText: string, categoryId: number, formAnswers: any[]) => {
-    // Map answers to the format expected by the API
+    // Map answers to the format expected by the API without IDs
+    // The backend will delete and recreate all answers anyway
     const answers = formAnswers.map(a => ({
-      answer: a.text || a.answer, // Accept either format
-      correct: a.correct,
-      // Don't include questionId here, the backend will handle that
+      answer: a.text || a.answer,
+      correct: a.correct
+      // Explicitly NOT including any IDs to avoid conflicts
     }));
     
     const requestData = { 

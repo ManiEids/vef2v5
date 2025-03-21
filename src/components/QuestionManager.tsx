@@ -43,7 +43,18 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     setError(null);
     try {
       console.log(`📋 Loading questions for category: ${slug}`);
-      const questionsData = await api.questions.getByCategory(slug);
+      
+      // Add a timestamp parameter to bust any cache
+      const timestamp = new Date().getTime();
+      const endpoint = `/questions/category/${slug}?t=${timestamp}`;
+      
+      const questionsData = await apiFetch(endpoint, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        }
+      });
+      
       console.log(`✅ Successfully loaded ${questionsData.length} questions`);
       setQuestions(questionsData);
     } catch (err) {
@@ -80,8 +91,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         const formattedAnswers = formData.answers.map((a: any) => ({
           answer: a.text,
           correct: a.correct,
-          // Include ID only if it exists (backend handles this now)
-          ...(a.id && { id: a.id })
+          // Do not include ID as the backend will recreate all answers
         }));
         
         console.log('Formatted answers for update:', formattedAnswers);
@@ -96,8 +106,10 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         
         console.log(`✅ Question updated successfully:`, updatedQuestion);
         
-        // Refresh the questions list to show updated data
-        await loadQuestions(categorySlug);
+        // Force a reload with a slight delay to ensure backend has completed its work
+        setTimeout(() => {
+          loadQuestions(categorySlug);
+        }, 500);
       } else {
         // Create new question - this works fine because POST /question handles answers
         console.log(`➕ Creating new question:`, formData);
