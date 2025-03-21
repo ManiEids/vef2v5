@@ -46,14 +46,9 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       
       // Add a timestamp parameter to bust any cache
       const timestamp = new Date().getTime();
-      const endpoint = `/questions/category/${slug}?t=${timestamp}`;
       
-      const questionsData = await apiFetch(endpoint, {
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-        }
-      });
+      // Use the api helper instead of direct apiFetch function
+      const questionsData = await api.questions.getByCategory(`${slug}?t=${timestamp}`);
       
       console.log(`✅ Successfully loaded ${questionsData.length} questions`);
       setQuestions(questionsData);
