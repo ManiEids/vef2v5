@@ -76,15 +76,16 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       if (selectedQuestion) {
         console.log(`✏️ Updating question ID: ${selectedQuestion.id}`, formData);
         
-        // Format answers correctly for the API
+        // Format answers correctly for the API, ensuring proper structure
         const formattedAnswers = formData.answers.map((a: any) => {
+          // Create a clean answer object with only the required fields
           const answerObj: any = {
             answer: a.text,
             correct: a.correct
           };
           
-          // Only include ID for existing answers
-          if (a.id) {
+          // Only include ID for existing answers that have IDs
+          if (a.id && a.id !== undefined) {
             answerObj.id = a.id;
           }
           
@@ -93,6 +94,24 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         
         console.log('Formatted answers for update:', formattedAnswers);
         
+        // Update the UI optimistically while the API call is in progress
+        const optimisticQuestion = {
+          ...selectedQuestion,
+          question: formData.question,
+          answers: formattedAnswers.map((a: any) => ({
+            id: a.id || Math.random(), // Temporary ID for new answers
+            answer: a.answer,
+            correct: a.correct,
+            questionId: selectedQuestion.id
+          }))
+        };
+        
+        // Apply optimistic update
+        setQuestions(prevQuestions => 
+          prevQuestions.map(q => q.id === selectedQuestion.id ? optimisticQuestion : q)
+        );
+        
+        // Make the API call
         const updatedQuestion = await api.questions.update(
           selectedQuestion.id,
           formData.question,
@@ -101,6 +120,9 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         );
         
         console.log(`✅ Question updated successfully:`, updatedQuestion);
+        
+        // Force a refresh to get the server state
+        await loadQuestions(categorySlug);
       } else {
         // Create new question
         console.log(`➕ Creating new question:`, formData);

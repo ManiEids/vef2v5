@@ -171,19 +171,19 @@ export const questionApi = {
     });
   },
   
-  // Update question - fixed version to handle answer deletion
+  // Update question - improved version
   update: (id: string | number, questionText: string, categoryId: number, formAnswers: any[]) => {
-    // Transform answers from form format to API format
+    // Ensure answers have the correct structure for API
     const answers = formAnswers.map(a => {
-      // Create standardized answer object
-      const answer = {
-        answer: a.text || a.answer,
-        correct: a.correct,
+      // Base answer object with required fields
+      const answer: any = {
+        answer: a.text || a.answer, // Accept either text (from form) or answer
+        correct: a.correct
       };
       
-      // Only include ID for existing answers (not for new ones)
-      if (a.id) {
-        return { ...answer, id: a.id };
+      // Only include ID for existing answers
+      if (a.id !== undefined) {
+        answer.id = a.id;
       }
       
       return answer;
@@ -199,7 +199,11 @@ export const questionApi = {
     
     return apiFetch(`/question/${id}`, {
       method: 'PATCH',
-      body: JSON.stringify(requestData)
+      body: JSON.stringify(requestData),
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
     });
   },
   

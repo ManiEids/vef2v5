@@ -24,12 +24,13 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
   // Initialize form with question data when editing
   useEffect(() => {
     if (question) {
+      console.log('Initializing modal with question data:', question);
       setFormData({
         question: question.question,
         categoryId: question.categoryId || categoryId,
         answers: question.answers.map(a => ({
           id: a.id,
-          text: a.answer,
+          text: a.answer, // Map from 'answer' field to 'text' for the form
           correct: a.correct
         }))
       });
@@ -117,7 +118,12 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
     setError(null);
     
     try {
-      await onSave(formData);
+      // Create a deep copy of the form data to avoid reference issues
+      const formDataToSubmit = JSON.parse(JSON.stringify(formData));
+      console.log('Modal submitting form data:', formDataToSubmit);
+      
+      // Pass the form data to the parent component
+      await onSave(formDataToSubmit);
       onClose();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
