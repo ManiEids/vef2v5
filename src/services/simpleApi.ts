@@ -99,7 +99,7 @@ export const questionApi = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        question: questionText, // Map text to question
+        question: questionText, 
         categoryId,
         answers
       })
