@@ -10,6 +10,14 @@
   --card-border-color: rgba(150, 150, 255, 0.2);
 }
 
+/* Fix for scrolling issues */
+html, body {
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
@@ -26,7 +34,7 @@ body {
 
 /* Space theme elements */
 .space-container {
-  overflow: hidden;
+  overflow: visible; /* Changed from 'hidden' to allow scrolling */
   position: relative;
 }
 

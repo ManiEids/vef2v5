@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="is">
       <body className="space-container">
         <StarsBackground />
-        <main className="min-h-screen p-6 max-w-5xl mx-auto">
+        <main className="min-h-screen p-6 max-w-5xl mx-auto relative z-10">
           {children}
         </main>
         <BackendWaker />

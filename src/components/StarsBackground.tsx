@@ -15,13 +15,13 @@ export function StarsBackground() {
 
   useEffect(() => {
     const generateStars = () => {
-      const starCount = 150;
+      const starCount = 100; // Reduced from 150 for better performance
       const newStars: Star[] = [];
       
       for (let i = 0; i < starCount; i++) {
         newStars.push({
           id: i,
-          size: Math.random() * 3,
+          size: Math.random() * 2.5, // Slightly smaller stars
           top: Math.random() * 100,
           left: Math.random() * 100,
           animationDelay: `${Math.random() * 4}s`
@@ -35,7 +35,7 @@ export function StarsBackground() {
   }, []);
 
   return (
-    <>
+    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: -1 }}>
       {stars.map(star => (
         <div
           key={star.id}
@@ -49,6 +49,6 @@ export function StarsBackground() {
           }}
         />
       ))}
-    </>
+    </div>
   );
 }
