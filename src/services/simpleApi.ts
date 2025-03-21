@@ -171,31 +171,31 @@ export const questionApi = {
     });
   },
   
-  // Update question - simplified version
+  // Update question - fixed version to handle answer deletion
   update: (id: string | number, questionText: string, categoryId: number, formAnswers: any[]) => {
-    // Map answers to the format expected by the API
+    // Transform answers from form format to API format
     const answers = formAnswers.map(a => {
+      // Create standardized answer object
       const answer = {
-        answer: a.text || a.answer, // Accept either format
+        answer: a.text || a.answer,
         correct: a.correct,
-        questionId: id
       };
       
-      // Only add ID if it exists
+      // Only include ID for existing answers (not for new ones)
       if (a.id) {
         return { ...answer, id: a.id };
       }
+      
       return answer;
     });
     
-    // Request data
-    const requestData = {
-      question: questionText,
+    const requestData = { 
+      question: questionText, 
       categoryId,
       answers
     };
     
-    console.log('🔍 Updating question - Request structure:', JSON.stringify(requestData, null, 2));
+    console.log('🔍 Improved updating question request structure:', JSON.stringify(requestData, null, 2));
     
     return apiFetch(`/question/${id}`, {
       method: 'PATCH',
@@ -203,10 +203,19 @@ export const questionApi = {
     });
   },
   
-  // Delete question
-  delete: (id: string | number) => apiFetch(`/question/${id}`, { // Endpoint should be /question/:id
-    method: 'DELETE'
-  })
+  // Delete question - improved robustness
+  delete: (id: string | number) => {
+    console.log(`🗑️ Sending DELETE request for question ID: ${id}`);
+    
+    return apiFetch(`/question/${id}`, {
+      method: 'DELETE',
+      // Add explicit cache control headers
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
+  }
 };
 
 // Export a combined API object for simpler imports

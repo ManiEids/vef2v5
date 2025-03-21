@@ -143,5 +143,69 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  return handleProxyRequest(request, 'DELETE');
+  // Special handling for DELETE requests
+  const path = request.nextUrl.searchParams.get('path');
+  if (!path) {
+    console.error(`❌ Proxy Error: Missing path parameter`);
+    return NextResponse.json({ error: 'Path parameter is required' }, { status: 400 });
+  }
+
+  const fullUrl = `${API_BASE_URL}${path}`;
+  console.log(`🔄 Proxying DELETE request to: ${fullUrl}`);
+  
+  try {
+    const options: RequestInit = {
+      method: 'DELETE',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      }
+    };
+    
+    const startTime = Date.now();
+    const response = await fetch(fullUrl, options);
+    const elapsedTime = Date.now() - startTime;
+    
+    console.log(`📥 Proxy received DELETE response in ${elapsedTime}ms with status: ${response.status}`);
+    
+    // For DELETE operations, 204 No Content is a success
+    if (response.status === 204) {
+      console.log(`✅ 204 No Content response from ${path} - DELETE successful`);
+      return new NextResponse(JSON.stringify({ success: true }), {
+        status: 200, // Return 200 instead of 204 to browser to ensure data is returned
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+    }
+    
+    // Handle other responses
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Server DELETE error ${response.status}:`, errorText);
+      return NextResponse.json({ 
+        error: errorText || `Server responded with status ${response.status}`,
+        status: response.status 
+      }, { status: response.status });
+    }
+    
+    // Try to parse response if any
+    try {
+      const responseText = await response.text();
+      if (responseText) {
+        const data = JSON.parse(responseText);
+        return NextResponse.json(data);
+      } else {
+        return NextResponse.json({ success: true });
+      }
+    } catch (e) {
+      return NextResponse.json({ success: true });
+    }
+  } catch (error) {
+    console.error(`❌ Proxy error for DELETE ${path}:`, error);
+    return NextResponse.json(
+      { error: `Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}` },
+      { status: 500 }
+    );
+  }
 }

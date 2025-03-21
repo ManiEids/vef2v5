@@ -76,25 +76,31 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       if (selectedQuestion) {
         console.log(`✏️ Updating question ID: ${selectedQuestion.id}`, formData);
         
-        // Simplify: Just map the form answers to the API format
-        const formattedAnswers = formData.answers.map((a: any) => ({
-          answer: a.text,
-          correct: a.correct,
-          questionId: selectedQuestion.id,
-          id: a.id // Include ID if it exists
-        }));
+        // Format answers correctly for the API
+        const formattedAnswers = formData.answers.map((a: any) => {
+          const answerObj: any = {
+            answer: a.text,
+            correct: a.correct
+          };
+          
+          // Only include ID for existing answers
+          if (a.id) {
+            answerObj.id = a.id;
+          }
+          
+          return answerObj;
+        });
         
         console.log('Formatted answers for update:', formattedAnswers);
         
-        // Update the question - no need to track deletions
-        await api.questions.update(
+        const updatedQuestion = await api.questions.update(
           selectedQuestion.id,
           formData.question,
           formData.categoryId,
           formattedAnswers
         );
         
-        console.log(`✅ Question updated successfully`);
+        console.log(`✅ Question updated successfully:`, updatedQuestion);
       } else {
         // Create new question
         console.log(`➕ Creating new question:`, formData);
@@ -106,20 +112,20 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         
         console.log('Formatted answers for create:', formattedAnswers);
         
-        await api.questions.create(
+        const newQuestion = await api.questions.create(
           formData.categoryId,
           formData.question,
           formattedAnswers
         );
         
-        console.log(`✅ Question created successfully`);
+        console.log(`✅ Question created successfully:`, newQuestion);
       }
       
       // Reload questions to get the latest data
       await loadQuestions(categorySlug);
     } catch (err) {
       console.error(`❌ Failed to save question:`, err);
-      throw err; // Let the modal handle the error display
+      throw err;
     }
   };
 
@@ -131,16 +137,23 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     try {
       console.log(`🗑️ Attempting to delete question ID: ${question.id}`);
       
-      // First update the UI immediately to provide feedback
+      // First update the UI for immediate feedback
       setQuestions(prev => prev.filter(q => q.id !== question.id));
       
-      // Then perform the actual deletion
-      await api.questions.delete(question.id);
-      console.log(`✅ Successfully deleted question ID: ${question.id}`);
+      // Make the delete API call and wait for it to complete
+      const result = await api.questions.delete(question.id);
+      console.log(`🗑️ Delete response:`, result);
+      
+      if (result && result.success) {
+        console.log(`✅ Successfully deleted question ID: ${question.id}`);
+      } else {
+        throw new Error('Deletion may not have succeeded - refreshing data');
+      }
     } catch (err) {
-      console.error(`❌ Failed to delete question ID: ${question.id}:`, err);
-      setError('Failed to delete question, please try again');
-      // Refresh questions to restore the UI to the correct state
+      console.error(`❌ Delete error for question ID: ${question.id}:`, err);
+      setError('Failed to delete question - please try again');
+      
+      // Refresh questions from server to get current state
       await loadQuestions(categorySlug);
     } finally {
       setLoading(false);
