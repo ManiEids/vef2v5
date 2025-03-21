@@ -101,39 +101,56 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
   const saveQuestion = async (formData: any) => {
     try {
       if (selectedQuestion) {
-        console.log(`✏️ Updating question ID: ${selectedQuestion.id}`, formData);
+        console.log(`✏️ Updating question ID: ${selectedQuestion.id}`);
         
-        // Format answers correctly for the API
+        // Simplify answers format
         const formattedAnswers = formData.answers.map((a: any) => ({
           answer: a.text,
           correct: a.correct
-          // Completely removing IDs to avoid any conflicts
+          // No IDs included
         }));
         
-        console.log('Formatted answers for update (removing all IDs):', formattedAnswers);
+        // Make the API call
+        const updatedQuestion = await api.questions.update(
+          selectedQuestion.id,
+          formData.question,
+          formData.categoryId,
+          formattedAnswers
+        );
         
-        try {
-          // Make the API call with the updated request structure
-          const updatedQuestion = await api.questions.update(
-            selectedQuestion.id,
-            formData.question,
-            formData.categoryId,
-            formattedAnswers
-          );
-          
-          console.log(`✅ Question update response:`, updatedQuestion);
-          
-          // Force a reload with increased delay to ensure backend has completed its work
-          setLoading(true); // Show loading state during the delay
-          setTimeout(async () => {
+        console.log(`✅ Question updated successfully:`, updatedQuestion);
+        
+        // Force full reload with clean parameters to avoid caching
+        const timestamp = Date.now();
+        setLoading(true);
+        
+        // Small delay to ensure backend processing completes
+        setTimeout(async () => {
+          try {
+            // Direct fetch to ensure fresh data
+            const response = await fetch(`/api/proxy?path=/questions/category/${categorySlug}&t=${timestamp}`, {
+              cache: 'no-store',
+              headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+              }
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Failed to refresh data: ${response.status}`);
+            }
+            
+            const refreshedData = await response.json();
+            console.log(`♻️ Refreshed question data:`, refreshedData);
+            setQuestions(refreshedData);
+          } catch (refreshErr) {
+            console.error('Error refreshing questions:', refreshErr);
+            // Fall back to normal reload
             await loadQuestions(categorySlug);
+          } finally {
             setLoading(false);
-          }, 1000); // Increased to 1 second for more reliability
-          
-        } catch (updateError) {
-          console.error('Update request failed:', updateError);
-          throw updateError;
-        }
+          }
+        }, 800);
       } else {
         // Create new question - this works fine because POST /question handles answers
         console.log(`➕ Creating new question:`, formData);

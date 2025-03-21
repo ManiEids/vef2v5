@@ -171,12 +171,13 @@ export const questionApi = {
     });
   },
   
-  // Update question - improved version with more robust error handling
+  // Update question - simplify to focus on reliability
   update: (id: string | number, questionText: string, categoryId: number, formAnswers: any[]) => {
-    // Map answers with absolutely minimal structure
+    // Clean answers structure - send only necessary fields
     const answers = formAnswers.map(a => ({
       answer: a.text || a.answer,
       correct: a.correct
+      // No IDs - backend will recreate all answers
     }));
     
     const requestData = { 
@@ -185,17 +186,13 @@ export const questionApi = {
       answers
     };
     
-    console.log('🔍 Update question request structure:', JSON.stringify(requestData, null, 2));
-    console.log(`⚠️ IMPORTANT: Make sure your backend PATCH handler for /question/${id} deletes and recreates answers`);
+    console.log(`🔄 Sending update for question ${id}:`, JSON.stringify(requestData, null, 2));
     
-    // Try to use a more unique URL to avoid any potential caching
-    const uniqueEndpoint = `/question/${id}?_t=${Date.now()}`;
-    
-    return apiFetch(uniqueEndpoint, {
+    // Add a timestamp to prevent caching issues
+    return apiFetch(`/question/${id}?nocache=${Date.now()}`, {
       method: 'PATCH',
       body: JSON.stringify(requestData),
       headers: {
-        'Content-Type': 'application/json',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache'
       }
