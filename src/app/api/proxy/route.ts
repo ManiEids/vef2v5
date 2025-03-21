@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// The base URL of your backend API
+// Grunnslóð API bakenda
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://vef2v3.onrender.com';
 
-// Helper function for all request methods with enhanced logging
+// Hjálparfall fyrir allar beiðniaðferðir með aukinni skráningu
 async function handleProxyRequest(request: NextRequest, method: string) {
-  // Get the path parameter from the URL
+  // Fáðu slóðarbreytu úr URL
   const path = request.nextUrl.searchParams.get('path');
   
   if (!path) {
-    console.error(`❌ Proxy Error: Missing path parameter`);
-    return NextResponse.json({ error: 'Path parameter is required' }, { status: 400 });
+    console.error(`❌ Proxy Villa: Vantar slóðarbreytu`);
+    return NextResponse.json({ error: 'Slóðarbreyta er nauðsynleg' }, { status: 400 });
   }
 
   const fullUrl = `${API_BASE_URL}${path}`;
-  console.log(`🔄 Proxying ${method} request to: ${fullUrl}`);
+  console.log(`🔄 Proxying ${method} beiðni til: ${fullUrl}`);
   
   try {
     const options: RequestInit = {
@@ -26,51 +26,51 @@ async function handleProxyRequest(request: NextRequest, method: string) {
       }
     };
 
-    // Add body for methods that need it and log it
+    // Bættu við body fyrir aðferðir sem þurfa það og skráðu það
     if (['POST', 'PUT', 'PATCH'].includes(method)) {
       const body = await request.json();
-      console.log(`📤 Proxy forwarding request body:`, body);
+      console.log(`📤 Proxy sendir beiðnigögn:`, body);
       options.body = JSON.stringify(body);
     }
     
-    // Log the complete request details
-    console.log(`🔍 Proxy ${method} Request Details:`, {
+    // Skráðu allar beiðniupplýsingar
+    console.log(`🔍 Proxy ${method} Beiðniupplýsingar:`, {
       url: fullUrl,
       method,
       headers: options.headers,
     });
     
-    // Forward the request to the actual API
+    // Framsendu beiðnina til raunverulegs API
     const startTime = Date.now();
     const response = await fetch(fullUrl, options);
     const elapsedTime = Date.now() - startTime;
     
-    console.log(`📥 Proxy received ${method} response in ${elapsedTime}ms with status: ${response.status}`);
-    console.log(`📋 Response headers:`, Object.fromEntries(response.headers.entries()));
+    console.log(`📥 Proxy fékk ${method} svar á ${elapsedTime}ms með stöðu: ${response.status}`);
+    console.log(`📋 Svarhausar:`, Object.fromEntries(response.headers.entries()));
 
-    // If response is not ok, log detailed error information
+    // Ef svar er ekki í lagi, skráðu ítarlegar villuupplýsingar
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ Server responded with error ${response.status}:`, errorText);
+      console.error(`❌ Server svaraði með villu ${response.status}:`, errorText);
       
       try {
-        // Try to parse error response as JSON for structured error
+        // Reyndu að lesa villusvar sem JSON fyrir skipulagða villu
         const errorData = JSON.parse(errorText);
-        console.error(`📛 Structured error from server:`, errorData);
+        console.error(`📛 Skipulögð villa frá server:`, errorData);
         return NextResponse.json(errorData, { status: response.status });
       } catch (e) {
-        // If not JSON, return as plain text error
+        // Ef ekki JSON, skilaðu sem hreinni textavillu
         return NextResponse.json({ 
-          error: errorText || `Server responded with status ${response.status}`,
+          error: errorText || `Server svaraði með stöðu ${response.status}`,
           status: response.status 
         }, { status: response.status });
       }
     }
 
-    // If the response is 204 No Content, return an empty successful response
+    // Ef svarið er 204 No Content, skilaðu tómu velgengnissvari
     if (response.status === 204) {
-      console.log(`✅ 204 No Content response from ${path}`);
-      // Return a proper NextResponse with 204 status
+      console.log(`✅ 204 No Content svar frá ${path}`);
+      // Skilaðu réttu NextResponse með 204 stöðu
       return new NextResponse(null, { 
         status: 204,
         headers: {
@@ -79,15 +79,15 @@ async function handleProxyRequest(request: NextRequest, method: string) {
       });
     }
 
-    // For all other responses, try to parse as JSON, but handle cases where response might not be JSON
+    // Fyrir öll önnur svör, reyndu að lesa sem JSON, en meðhöndlaðu tilfelli þar sem svar gæti ekki verið JSON
     try {
       const responseText = await response.text();
-      console.log(`📝 Raw response text (first 200 chars): ${responseText.substring(0, 200)}${responseText.length > 200 ? '...' : ''}`);
+      console.log(`📝 Hrátt svartexti (fyrstu 200 stafir): ${responseText.substring(0, 200)}${responseText.length > 200 ? '...' : ''}`);
       
       try {
-        // Try to parse the response as JSON
+        // Reyndu að lesa svarið sem JSON
         const data = JSON.parse(responseText);
-        console.log(`✅ Successfully parsed JSON response from ${path}:`, data);
+        console.log(`✅ Tókst að lesa JSON svar frá ${path}:`, data);
         
         return NextResponse.json(data, { 
           status: response.status,
@@ -97,8 +97,8 @@ async function handleProxyRequest(request: NextRequest, method: string) {
           }
         });
       } catch (jsonError) {
-        console.error(`⚠️ Failed to parse response as JSON:`, jsonError);
-        // If response isn't JSON, return the raw text with a success indicator
+        console.error(`⚠️ Mistókst að lesa svar sem JSON:`, jsonError);
+        // Ef svar er ekki JSON, skilaðu hráum texta með velgengnisvísun
         return NextResponse.json({ 
           success: response.ok,
           status: response.status,
@@ -109,18 +109,18 @@ async function handleProxyRequest(request: NextRequest, method: string) {
         });
       }
     } catch (textError) {
-      console.error(`⚠️ Failed to read response text:`, textError);
+      console.error(`⚠️ Mistókst að lesa svartexta:`, textError);
       return NextResponse.json({ 
         success: response.ok,
         status: response.status,
         statusText: response.statusText,
-        error: 'Failed to read response' 
+        error: 'Mistókst að lesa svar' 
       }, { status: response.status });
     }
   } catch (error) {
-    console.error(`❌ Proxy error for ${method} ${path}:`, error);
+    console.error(`❌ Proxy villa fyrir ${method} ${path}:`, error);
     return NextResponse.json(
-      { error: `Failed to ${method.toLowerCase()} data: ${error instanceof Error ? error.message : 'Unknown error'}` },
+      { error: `Mistókst að ${method.toLowerCase()} gögn: ${error instanceof Error ? error.message : 'Óþekkt villa'}` },
       { status: 500 }
     );
   }
@@ -139,20 +139,20 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  // Special handling for PATCH requests
+  // Sérstök meðhöndlun fyrir PATCH beiðnir
   const path = request.nextUrl.searchParams.get('path');
   if (!path) {
-    console.error(`❌ Proxy Error: Missing path parameter`);
-    return NextResponse.json({ error: 'Path parameter is required' }, { status: 400 });
+    console.error(`❌ Proxy Villa: Vantar slóðarbreytu`);
+    return NextResponse.json({ error: 'Slóðarbreyta er nauðsynleg' }, { status: 400 });
   }
 
   const fullUrl = `${API_BASE_URL}${path}`;
-  console.log(`🔄 Proxying PATCH request to: ${fullUrl}`);
+  console.log(`🔄 Proxying PATCH beiðni til: ${fullUrl}`);
   
   try {
-    // Get the request body
+    // Fáðu beiðnigögn
     const bodyData = await request.json();
-    console.log(`📤 PATCH Body for ${path}:`, bodyData);
+    console.log(`📤 PATCH Gögn fyrir ${path}:`, bodyData);
     
     const options: RequestInit = {
       method: 'PATCH',
@@ -168,25 +168,25 @@ export async function PATCH(request: NextRequest) {
     const response = await fetch(fullUrl, options);
     const elapsedTime = Date.now() - startTime;
     
-    console.log(`📥 Proxy received PATCH response in ${elapsedTime}ms with status: ${response.status}`);
-    console.log(`📋 PATCH Response headers:`, Object.fromEntries(response.headers.entries()));
+    console.log(`📥 Proxy fékk PATCH svar á ${elapsedTime}ms með stöðu: ${response.status}`);
+    console.log(`📋 PATCH Svarhausar:`, Object.fromEntries(response.headers.entries()));
 
-    // Special handling for error responses
+    // Sérstök meðhöndlun fyrir villusvör
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ PATCH error ${response.status} response:`, errorText);
+      console.error(`❌ PATCH villa ${response.status} svar:`, errorText);
       
       try {
         const errorData = JSON.parse(errorText);
         return NextResponse.json(errorData, { status: response.status });
       } catch (e) {
         return NextResponse.json({ 
-          error: errorText || `Server responded with status ${response.status}` 
+          error: errorText || `Server svaraði með stöðu ${response.status}` 
         }, { status: response.status });
       }
     }
 
-    // For successful responses, parse and return
+    // Fyrir velgengnissvör, lesið og skilaðu
     try {
       const responseText = await response.text();
       if (!responseText) {
@@ -199,24 +199,24 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
   } catch (error) {
-    console.error(`❌ Proxy error for PATCH ${path}:`, error);
+    console.error(`❌ Proxy villa fyrir PATCH ${path}:`, error);
     return NextResponse.json(
-      { error: `Failed to update data: ${error instanceof Error ? error.message : 'Unknown error'}` },
+      { error: `Mistókst að uppfæra gögn: ${error instanceof Error ? error.message : 'Óþekkt villa'}` },
       { status: 500 }
     );
   }
 }
 
 export async function DELETE(request: NextRequest) {
-  // Special handling for DELETE requests
+  // Sérstök meðhöndlun fyrir DELETE beiðnir
   const path = request.nextUrl.searchParams.get('path');
   if (!path) {
-    console.error(`❌ Proxy Error: Missing path parameter`);
-    return NextResponse.json({ error: 'Path parameter is required' }, { status: 400 });
+    console.error(`❌ Proxy Villa: Vantar slóðarbreytu`);
+    return NextResponse.json({ error: 'Slóðarbreyta er nauðsynleg' }, { status: 400 });
   }
 
   const fullUrl = `${API_BASE_URL}${path}`;
-  console.log(`🔄 Proxying DELETE request to: ${fullUrl}`);
+  console.log(`🔄 Proxying DELETE beiðni til: ${fullUrl}`);
   
   try {
     const options: RequestInit = {
@@ -231,30 +231,30 @@ export async function DELETE(request: NextRequest) {
     const response = await fetch(fullUrl, options);
     const elapsedTime = Date.now() - startTime;
     
-    console.log(`📥 Proxy received DELETE response in ${elapsedTime}ms with status: ${response.status}`);
+    console.log(`📥 Proxy fékk DELETE svar á ${elapsedTime}ms með stöðu: ${response.status}`);
     
-    // For DELETE operations, 204 No Content is a success
+    // Fyrir DELETE aðgerðir, 204 No Content er velgengni
     if (response.status === 204) {
-      console.log(`✅ 204 No Content response from ${path} - DELETE successful`);
+      console.log(`✅ 204 No Content svar frá ${path} - DELETE tókst`);
       return new NextResponse(JSON.stringify({ success: true }), {
-        status: 200, // Return 200 instead of 204 to browser to ensure data is returned
+        status: 200, // Skila 200 í stað 204 til vafra til að tryggja að gögn séu skilað
         headers: {
           'Content-Type': 'application/json',
         }
       });
     }
     
-    // Handle other responses
+    // Meðhöndla önnur svör
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ Server DELETE error ${response.status}:`, errorText);
+      console.error(`❌ Server DELETE villa ${response.status}:`, errorText);
       return NextResponse.json({ 
-        error: errorText || `Server responded with status ${response.status}`,
+        error: errorText || `Server svaraði með stöðu ${response.status}`,
         status: response.status 
       }, { status: response.status });
     }
     
-    // Try to parse response if any
+    // Reyndu að lesa svar ef einhver
     try {
       const responseText = await response.text();
       if (responseText) {
@@ -267,9 +267,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
   } catch (error) {
-    console.error(`❌ Proxy error for DELETE ${path}:`, error);
+    console.error(`❌ Proxy villa fyrir DELETE ${path}:`, error);
     return NextResponse.json(
-      { error: `Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}` },
+      { error: `Mistókst að eyða: ${error instanceof Error ? error.message : 'Óþekkt villa'}` },
       { status: 500 }
     );
   }

@@ -78,22 +78,22 @@ export function QuestionForm({
     
     // Simple validation
     if (text.trim() === '') {
-      setError('Question cannot be empty');
+      setError('Question cannot be empty'); // Spurning má ekki vera tóm
       return;
     }
     
     if (answers.some(answer => answer.text.trim() === '')) {
-      setError('Answers cannot be empty');
+      setError('Answers cannot be empty'); // Svör mega ekki vera tóm
       return;
     }
     
     if (!answers.some(answer => answer.correct)) {
-      setError('There must be at least one correct answer');
+      setError('There must be at least one correct answer'); // Eitt rétt svar
       return;
     }
     
     if (!selectedCategoryId && !categoryId) {
-      setError('Please select a category for the question');
+      setError('Please select a category for the question'); // Veldu flokk
       return;
     }
 
@@ -102,7 +102,7 @@ export function QuestionForm({
     try {
       const activeCategoryId = selectedCategoryId || categoryId;
       if (!activeCategoryId) {
-        throw new Error('Category ID is required');
+        throw new Error('Category ID is required'); // Flokks ID vantar
       }
       
       await onSubmit(activeCategoryId, text, answers);
@@ -118,7 +118,7 @@ export function QuestionForm({
         ]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'An error occurred'); // Villa
     } finally {
       setLoading(false);
     }
@@ -212,8 +212,8 @@ export function QuestionForm({
         type="submit"
         disabled={loading}
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-      >
-        {loading ? 'Vista...' : initialText ? 'Uppfæra spurningu' : 'Búa til spurningu'}
+        >
+        {loading ? 'Vista...' : initialText ? 'Uppfæra spurningu' : 'Búa til spurningu'} // Vista.../Uppfæra/Búa til
       </button>
     </form>
   );

@@ -43,7 +43,7 @@ export default function EditQuestionPage({ params }: EditQuestionPageProps) {
         setCategories(categoriesData);
         setError(null);
       } catch (err) {
-        setError('Villa við að sækja spurningu');
+        setError('Villa við að sækja spurningu'); // Villa
         console.error(err);
       } finally {
         setLoading(false);
@@ -70,7 +70,7 @@ export default function EditQuestionPage({ params }: EditQuestionPageProps) {
   if (loading) {
     return (
       <Layout>
-        <p>Sæki spurningu...</p>
+        <p>Sæki spurningu...</p> // Sæki
       </Layout>
     );
   }
@@ -79,7 +79,7 @@ export default function EditQuestionPage({ params }: EditQuestionPageProps) {
     return (
       <Layout>
         <div className="bg-red-100 text-red-800 p-3 rounded">
-          {error || 'Spurning fannst ekki'}
+          {error || 'Spurning fannst ekki'} // Villa eða engin spurning
         </div>
         <button
           onClick={() => router.push('/admin/questions')}

@@ -172,31 +172,26 @@ export const questionApi = {
   },
   
   // Update question - simplify to focus on reliability
-  update: (id: string | number, questionText: string, categoryId: number, formAnswers: any[]) => {
-    // Clean answers structure - send only necessary fields
-    const answers = formAnswers.map(a => ({
-      answer: a.text || a.answer,
-      correct: a.correct
-      // No IDs - backend will recreate all answers
+  update: async (id: number | string, text: string, categoryId: number, answers: any[]): Promise<any> => {
+    console.log(`📝 Updating question ${id} with data:`, { text, categoryId, answers });
+    
+    // Format answers for the backend
+    const formattedAnswers = answers.map(answer => ({
+      answer: answer.text, // Map text field to answer as expected by backend
+      correct: answer.correct
     }));
     
-    const requestData = { 
-      question: questionText, 
+    // Construct payload to match backend expectations
+    const payload = {
+      question: text,  // Use 'question' as the field name, not 'text'
       categoryId,
-      answers
+      answers: formattedAnswers
     };
     
-    console.log(`🔄 Sending update for question ${id}:`, JSON.stringify(requestData, null, 2));
+    console.log(`🚀 Sending payload to backend:`, payload);
     
-    // Add a timestamp to prevent caching issues
-    return apiFetch(`/question/${id}?nocache=${Date.now()}`, {
-      method: 'PATCH',
-      body: JSON.stringify(requestData),
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache'
-      }
-    });
+    const path = `/question/${id}`;
+    return apiProxyRequest('PATCH', path, payload);
   },
   
   // Delete question - improved robustness

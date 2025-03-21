@@ -12,7 +12,7 @@ export function QuestionList({ questions }: QuestionListProps) {
   const [feedback, setFeedback] = useState<Record<string | number, boolean | null>>({});
 
   if (questions.length === 0) {
-    return <p>No questions found in this category.</p>;
+    return <p>No questions found in this category.</p>; // Engar spurningar
   }
 
   const handleAnswerSelect = (questionId: string | number, answerId: string | number) => {
@@ -70,7 +70,7 @@ export function QuestionList({ questions }: QuestionListProps) {
             </button>
           ) : (
             <div className={`mt-4 p-3 rounded ${feedback[question.id] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {feedback[question.id] ? 'Correct!' : 'Incorrect!'}
+              {feedback[question.id] ? 'Correct!' : 'Incorrect!'} // Rétt/Rangt
             </div>
           )}
         </div>

@@ -23,7 +23,7 @@ export default function QuestionManagerPage() {
           setSelectedCategory(categoriesData[0].slug);
         }
       } catch (err) {
-        setError('Failed to load categories. The backend server might be starting up.');
+        setError('Failed to load categories. The backend server might be starting up.'); // Villa við flokka
       } finally {
         setLoading(false);
       }
@@ -48,7 +48,7 @@ export default function QuestionManagerPage() {
       )}
       
       {loading ? (
-        <div className="animate-pulse p-4">Loading categories...</div>
+        <div className="animate-pulse p-4">Loading categories...</div> // Hleð flokka
       ) : (
         <>
           <div className="mb-6">

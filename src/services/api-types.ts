@@ -1,20 +1,20 @@
 export interface Category {
   id: number;
-  title: string;  // Backend uses 'title' not 'name'
+  title: string;
   slug: string;
 }
 
 export interface Answer {
   id: number;
-  answer: string;  // Backend uses 'answer' not 'text'
+  answer: string; // This is how the backend refers to the answer text
   correct: boolean;
   questionId?: number;
 }
 
 export interface Question {
   id: number;
-  question: string;  // Backend uses 'question' not 'text'
+  question: string; // This is how the backend refers to the question text
+  categoryId: number;
   answers: Answer[];
   category?: Category;
-  categoryId?: number;
 }

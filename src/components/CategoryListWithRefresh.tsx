@@ -15,13 +15,13 @@ export function CategoryListWithRefresh() {
     setLoading(true);
     setError(null);
     try {
-      console.log('Fetching categories from client component');
+      console.log('Fetching categories from client component'); // Sæki flokka
       const data = await getCategories();
-      console.log('Categories fetched:', data);
+      console.log('Categories fetched:', data); // Flokkar sóttir
       setCategories(data);
     } catch (err) {
-      console.error('Failed to fetch categories:', err);
-      setError('Failed to load categories. The backend server may be starting up since it\'s on a free Render tier.');
+      console.error('Failed to fetch categories:', err); // Mistókst að sækja
+      setError('Failed to load categories. The backend server may be starting up since it\'s on a free Render tier.'); // Hleðsla mistókst
     } finally {
       setLoading(false);
     }
@@ -59,11 +59,11 @@ export function CategoryListWithRefresh() {
   if (!categories || categories.length === 0) {
     return (
       <div>
-        <ErrorMessage message="No categories found. The backend server may still be starting up." />
+        <ErrorMessage message="No categories found. The backend server may still be starting up." /> // Engir flokkar
         <button 
           onClick={() => loadCategories()}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
+          >
           Refresh Page
         </button>
       </div>

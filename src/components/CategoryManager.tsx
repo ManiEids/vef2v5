@@ -20,13 +20,13 @@ export function CategoryManager() {
     setLoading(true);
     setError(null);
     try {
-      console.log(`📋 Loading categories`);
+      console.log(`📋 Loading categories`); // Hleð flokka
       const categoriesData = await api.categories.getAll();
-      console.log(`✅ Successfully loaded ${categoriesData.length} categories`);
+      console.log(`✅ Successfully loaded ${categoriesData.length} categories`); // Flokkar hlaðnir
       setCategories(categoriesData);
     } catch (err) {
-      console.error(`❌ Failed to load categories:`, err);
-      setError('Failed to load categories');
+      console.error(`❌ Failed to load categories:`, err); // Hleðsla mistókst
+      setError('Failed to load categories'); // Hleðsla mistókst
     } finally {
       setLoading(false);
     }
@@ -52,7 +52,7 @@ export function CategoryManager() {
   const saveCategory = async (formData: { title: string }) => {
     try {
       if (selectedCategory) {
-        console.log(`✏️ Updating category: ${selectedCategory.slug}`);
+        console.log(`✏️ Updating category: ${selectedCategory.slug}`); // Uppfæri flokk
         
         // Make the API call
         const updatedCategory = await api.categories.update(
@@ -60,23 +60,23 @@ export function CategoryManager() {
           formData.title
         );
         
-        console.log(`✅ Category updated successfully:`, updatedCategory);
+        console.log(`✅ Category updated successfully:`, updatedCategory); // Flokkur uppfærður
         
         // Refresh the category list
         await loadCategories();
       } else {
         // Create new category
-        console.log(`➕ Creating new category:`, formData);
+        console.log(`➕ Creating new category:`, formData); // Bý til flokk
         
         const newCategory = await api.categories.create(formData.title);
         
-        console.log(`✅ Category created successfully:`, newCategory);
+        console.log(`✅ Category created successfully:`, newCategory); // Flokkur búinn til
         
         // Refresh categories list
         await loadCategories();
       }
     } catch (err) {
-      console.error(`❌ Failed to save category:`, err);
+      console.error(`❌ Failed to save category:`, err); // Vista mistókst
       throw err;
     }
   };
@@ -87,7 +87,7 @@ export function CategoryManager() {
     setLoading(true);
     setError(null);
     try {
-      console.log(`🗑️ Attempting to delete category: ${category.slug}`);
+      console.log(`🗑️ Attempting to delete category: ${category.slug}`); // Eyði flokk
       
       // First update the UI for immediate feedback
       setCategories(prev => prev.filter(c => c.id !== category.id));
@@ -99,8 +99,8 @@ export function CategoryManager() {
       // Refresh categories to ensure we have the latest data
       await loadCategories();
     } catch (err) {
-      console.error(`❌ Delete error for category: ${category.slug}:`, err);
-      setError('Failed to delete category - please try again');
+      console.error(`❌ Delete error for category: ${category.slug}:`, err); // Eyðing mistókst
+      setError('Failed to delete category - please try again'); // Eyðing mistókst
       
       // Refresh categories to get current state
       await loadCategories();
@@ -110,7 +110,7 @@ export function CategoryManager() {
   };
 
   if (loading) {
-    return <div className="animate-pulse p-4">Loading categories...</div>;
+    return <div className="animate-pulse p-4">Loading categories...</div>; // Hleð flokka
   }
 
   return (
@@ -135,7 +135,7 @@ export function CategoryManager() {
       {/* Category list */}
       <div className="space-y-4">
         {categories.length === 0 ? (
-          <p>No categories yet.</p>
+          <p>No categories yet.</p> // Engir flokkar
         ) : (
           categories.map(category => (
             <div key={category.id} className="bg-white text-black p-4 rounded shadow-md flex justify-between items-center">

@@ -26,7 +26,7 @@ export default function AdminQuestionsPage() {
         setCategories(categoriesData);
         setLoading(false);
       } catch (err) {
-        setError('Villa við að sækja flokka');
+        setError('Villa við að sækja flokka'); // Villa
         setLoading(false);
       }
     }
@@ -43,7 +43,7 @@ export default function AdminQuestionsPage() {
           setError(null);
         })
         .catch(err => {
-          setError('Villa við að sækja spurningar');
+          setError('Villa við að sækja spurningar'); // Villa
           setQuestions([]);
         })
         .finally(() => {
@@ -111,13 +111,13 @@ export default function AdminQuestionsPage() {
           <h2 className="text-xl font-semibold mb-4">Núverandi spurningar í {categories.find(c => c.slug === selectedCategory)?.title}</h2>
           
           {loading ? (
-            <p>Sæki spurningar...</p>
+            <p>Sæki spurningar...</p> // Sæki
           ) : error ? (
             <div className="bg-red-100 text-red-800 p-3 rounded">
               {error}
             </div>
           ) : questions.length === 0 ? (
-            <p>Engar spurningar fundust í þessum flokki.</p>
+            <p>Engar spurningar fundust í þessum flokki.</p> // Engar
           ) : (
             <ul className="space-y-4">
               {questions.map(question => (
