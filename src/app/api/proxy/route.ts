@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Grunnslóð API bakenda
+// slóð API bakenda
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://vef2v3.onrender.com';
 
 // Hjálparfall fyrir allar beiðniaðferðir með aukinni skráningu
 async function handleProxyRequest(request: NextRequest, method: string) {
-  // Fáðu slóðarbreytu úr URL
   const path = request.nextUrl.searchParams.get('path');
   
   if (!path) {
@@ -26,21 +25,19 @@ async function handleProxyRequest(request: NextRequest, method: string) {
       }
     };
 
-    // Bættu við body fyrir aðferðir sem þurfa það og skráðu það
+  
     if (['POST', 'PUT', 'PATCH'].includes(method)) {
       const body = await request.json();
       console.log(`📤 Proxy sendir beiðnigögn:`, body);
       options.body = JSON.stringify(body);
     }
     
-    // Skráðu allar beiðniupplýsingar
     console.log(`🔍 Proxy ${method} Beiðniupplýsingar:`, {
       url: fullUrl,
       method,
       headers: options.headers,
     });
     
-    // Framsendu beiðnina til raunverulegs API
     const startTime = Date.now();
     const response = await fetch(fullUrl, options);
     const elapsedTime = Date.now() - startTime;
@@ -48,13 +45,13 @@ async function handleProxyRequest(request: NextRequest, method: string) {
     console.log(`📥 Proxy fékk ${method} svar á ${elapsedTime}ms með stöðu: ${response.status}`);
     console.log(`📋 Svarhausar:`, Object.fromEntries(response.headers.entries()));
 
-    // Ef svar er ekki í lagi, skráðu ítarlegar villuupplýsingar
+    // sérstök meðhöndlun fyrir villusvör
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`❌ Server svaraði með villu ${response.status}:`, errorText);
       
       try {
-        // Reyndu að lesa villusvar sem JSON fyrir skipulagða villu
+        // Ef svarið er JSON, skilaðu því sem JSON
         const errorData = JSON.parse(errorText);
         console.error(`📛 Skipulögð villa frá server:`, errorData);
         return NextResponse.json(errorData, { status: response.status });
@@ -67,10 +64,10 @@ async function handleProxyRequest(request: NextRequest, method: string) {
       }
     }
 
-    // Ef svarið er 204 No Content, skilaðu tómu velgengnissvari
+    // Ef svarið er 204 
     if (response.status === 204) {
       console.log(`✅ 204 No Content svar frá ${path}`);
-      // Skilaðu réttu NextResponse með 204 stöðu
+      // Skilað réttu NextResponse með 204 stöðu
       return new NextResponse(null, { 
         status: 204,
         headers: {
@@ -79,13 +76,13 @@ async function handleProxyRequest(request: NextRequest, method: string) {
       });
     }
 
-    // Fyrir öll önnur svör, reyndu að lesa sem JSON, en meðhöndlaðu tilfelli þar sem svar gæti ekki verið JSON
+    // Fyrir öll önnur svör,  lesa sem JSON
     try {
       const responseText = await response.text();
       console.log(`📝 Hrátt svartexti (fyrstu 200 stafir): ${responseText.substring(0, 200)}${responseText.length > 200 ? '...' : ''}`);
       
       try {
-        // Reyndu að lesa svarið sem JSON
+        // Reynda JSON
         const data = JSON.parse(responseText);
         console.log(`✅ Tókst að lesa JSON svar frá ${path}:`, data);
         
@@ -98,7 +95,7 @@ async function handleProxyRequest(request: NextRequest, method: string) {
         });
       } catch (jsonError) {
         console.error(`⚠️ Mistókst að lesa svar sem JSON:`, jsonError);
-        // Ef svar er ekki JSON, skilaðu hráum texta með velgengnisvísun
+        // Ef svar er ekki JSON,
         return NextResponse.json({ 
           success: response.ok,
           status: response.status,
@@ -139,7 +136,7 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  // Sérstök meðhöndlun fyrir PATCH beiðnir
+  //patch
   const path = request.nextUrl.searchParams.get('path');
   if (!path) {
     console.error(`❌ Proxy Villa: Vantar slóðarbreytu`);
@@ -150,7 +147,7 @@ export async function PATCH(request: NextRequest) {
   console.log(`🔄 Proxying PATCH beiðni til: ${fullUrl}`);
   
   try {
-    // Fáðu beiðnigögn
+    // Lesa gögn úr beiðni
     const bodyData = await request.json();
     console.log(`📤 PATCH Gögn fyrir ${path}:`, bodyData);
     
@@ -171,7 +168,7 @@ export async function PATCH(request: NextRequest) {
     console.log(`📥 Proxy fékk PATCH svar á ${elapsedTime}ms með stöðu: ${response.status}`);
     console.log(`📋 PATCH Svarhausar:`, Object.fromEntries(response.headers.entries()));
 
-    // Sérstök meðhöndlun fyrir villusvör
+    // fyrir villusvör
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`❌ PATCH villa ${response.status} svar:`, errorText);
@@ -186,7 +183,7 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    // Fyrir velgengnissvör, lesið og skilaðu
+    // Meðhöndla önnur svör
     try {
       const responseText = await response.text();
       if (!responseText) {
@@ -208,7 +205,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  // Sérstök meðhöndlun fyrir DELETE beiðnir
+  // Deleta
   const path = request.nextUrl.searchParams.get('path');
   if (!path) {
     console.error(`❌ Proxy Villa: Vantar slóðarbreytu`);
@@ -233,11 +230,11 @@ export async function DELETE(request: NextRequest) {
     
     console.log(`📥 Proxy fékk DELETE svar á ${elapsedTime}ms með stöðu: ${response.status}`);
     
-    // Fyrir DELETE aðgerðir, 204 No Content er velgengni
+    // Fyrir DELETE aðgerðir,
     if (response.status === 204) {
       console.log(`✅ 204 No Content svar frá ${path} - DELETE tókst`);
       return new NextResponse(JSON.stringify({ success: true }), {
-        status: 200, // Skila 200 í stað 204 til vafra til að tryggja að gögn séu skilað
+        status: 200, // Skila 200 í stað 204 
         headers: {
           'Content-Type': 'application/json',
         }
@@ -254,7 +251,7 @@ export async function DELETE(request: NextRequest) {
       }, { status: response.status });
     }
     
-    // Reyndu að lesa svar ef einhver
+    // Reyna að lesa svar ef einhver
     try {
       const responseText = await response.text();
       if (responseText) {

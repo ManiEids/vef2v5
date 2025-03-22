@@ -44,8 +44,8 @@ export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryMod
       await onSave({ title });
       onClose();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'; // Óþekkt
-      setError(`Failed to save category: ${errorMessage}`); // Villa
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'; 
+      setError(`Failed to save category: ${errorMessage}`);
     } finally {
       setLoading(false);
     }

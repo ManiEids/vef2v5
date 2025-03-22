@@ -1,10 +1,10 @@
-// Import types from absolute path using your tsconfig paths config
+// Flytja inn týpur frá absolute path með því að nota tsconfig paths stillingarnar þínar
 import { Category, Question } from '@/services/api-types';
 
-// For server components only
+// Aðeins fyrir server component
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-// Helper functions for data normalization (same as clientApi.ts)
+// Hjálparföll fyrir data normalization (sama og clientApi.ts)
 const normalizeCategory = (category: any): Category => ({
   id: category.id,
   title: category.title || '',
@@ -32,7 +32,8 @@ export async function getServerCategories(): Promise<Category[]> {
   });
   
   if (!response.ok) {
-    throw new Error(`Failed to fetch categories: ${response.status}`);
+    // Ef svar er ekki OK, kasta villu
+    throw new Error(`Villa við að sækja flokka: ${response.status}`);
   }
   
   const result = await response.json();
@@ -49,7 +50,8 @@ export async function getServerCategory(slug: string): Promise<Category> {
   });
   
   if (!response.ok) {
-    throw new Error(`Failed to fetch category: ${response.status}`);
+    // Ef svar er ekki OK, kasta villu
+    throw new Error(`Villa við að sækja flokk: ${response.status}`);
   }
   
   const result = await response.json();
@@ -62,7 +64,8 @@ export async function getServerQuestionsByCategory(slug: string): Promise<Questi
   });
   
   if (!response.ok) {
-    throw new Error(`Failed to fetch questions: ${response.status}`);
+    // Ef svar er ekki OK, kasta villu
+    throw new Error(`Villa við að sækja spurningar: ${response.status}`);
   }
   
   const result = await response.json();

@@ -119,19 +119,19 @@ export function QuestionModal({ isOpen, onClose, onSave, question, categoryId }:
     setError(null);
     
     try {
-      // Create a deep copy of the form data to avoid reference issues
+      // refrence 
       const formDataToSubmit = JSON.parse(JSON.stringify(formData));
       
-      // Ensure answers are properly formatted for the API
+      // veryfy data
       formDataToSubmit.answers = formDataToSubmit.answers.map((a: { text: string; correct: boolean; id?: number }) => ({
         text: a.text,
         correct: a.correct,
-        // Exclude any IDs since the backend recreates all answers
+        // passa id
       }));
       
       console.log('Modal submitting form data:', formDataToSubmit); // Sendi
       
-      // Pass the form data to the parent component
+      // double checkka
       await onSave(formDataToSubmit);
       onClose();
     } catch (err) {

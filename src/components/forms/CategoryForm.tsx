@@ -3,12 +3,12 @@
 import React, { useState } from 'react';
 
 interface CategoryFormProps {
-  onSubmit: (title: string) => Promise<void>; // Changed from name to title
-  initialTitle?: string; // Changed from initialName
+  onSubmit: (title: string) => Promise<void>; 
+  initialTitle?: string; 
 }
 
 export function CategoryForm({ onSubmit, initialTitle = '' }: CategoryFormProps) {
-  const [title, setTitle] = useState(initialTitle); // Changed from name
+  const [title, setTitle] = useState(initialTitle); 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,10 +18,10 @@ export function CategoryForm({ onSubmit, initialTitle = '' }: CategoryFormProps)
     setLoading(true);
 
     try {
-      await onSubmit(title); // Changed from name
+      await onSubmit(title); 
       setTitle('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred'); // Óþekkt
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
     }

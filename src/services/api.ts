@@ -1,21 +1,21 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
 
-// Types that match your backend structure
+// matcha bakenda
 export interface Category {
   id: number;
-  title: string; // Backend uses 'title' not 'name'
+  title: string; 
   slug: string;
 }
 
 export interface Answer {
   id: number;
-  answer: string; // Backend uses 'answer' not 'text'
+  answer: string; 
   correct: boolean;
 }
 
 export interface Question {
   id: number;
-  question: string; // Backend uses 'question' not 'text'
+  question: string; 
   answers: Answer[];
   category?: Category;
   categoryId?: number;
@@ -37,7 +37,7 @@ export async function getCategories(): Promise<Category[]> {
     const result = await response.json();
     console.log('Categories data received:', result);
     
-    // Handle paginated response from your backend
+    // Handle paginated 
     return result.data ? result.data : result;
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -60,7 +60,7 @@ export async function getCategory(slug: string): Promise<Category> {
 }
 
 export async function getQuestionsByCategory(slug: string): Promise<Question[]> {
-  // Updated to match your actual endpoint structure from README
+
   const response = await fetch(`${API_BASE_URL}/questions/category/${slug}`);
   
   if (!response.ok) {
@@ -72,13 +72,13 @@ export async function getQuestionsByCategory(slug: string): Promise<Question[]> 
 }
 
 export async function createCategory(title: string): Promise<Category> {
-  // Updated to match your actual endpoint from README
+
   const response = await fetch(`${API_BASE_URL}/category`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ title }), // Important: use title here, not name
+    body: JSON.stringify({ title }), 
   });
   
   if (!response.ok) {
@@ -91,17 +91,17 @@ export async function createCategory(title: string): Promise<Category> {
 
 export async function createQuestion(
   categoryId: number, 
-  question: string, // Backend uses 'question' not 'text'
+  question: string, 
   answers: Omit<Answer, 'id'>[]
 ): Promise<Question> {
-  // Updated to match your actual endpoint from README
+
   const response = await fetch(`${API_BASE_URL}/question`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ 
-      question, // Important: use question here, not text
+      question, //  use question here, not text
       categoryId,
       answers 
     }),
@@ -116,7 +116,7 @@ export async function createQuestion(
 }
 
 export async function deleteCategory(slug: string): Promise<void> {
-  // Updated to match your actual endpoint from README
+
   const response = await fetch(`${API_BASE_URL}/category/${slug}`, {
     method: 'DELETE',
   });
@@ -128,13 +128,13 @@ export async function deleteCategory(slug: string): Promise<void> {
 }
 
 export async function updateCategory(slug: string, title: string): Promise<Category> {
-  // Updated to match your actual endpoint from README
+
   const response = await fetch(`${API_BASE_URL}/category/${slug}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ title }), // Important: use title here, not name
+    body: JSON.stringify({ title }), //  title here, not name
   });
   
   if (!response.ok) {
@@ -161,18 +161,18 @@ export async function getQuestion(id: string): Promise<Question> {
 
 export async function updateQuestion(
   id: string | number,
-  question: string, // Backend uses 'question' not 'text'
+  question: string, 
   categoryId: number,
   answers: Array<Omit<Answer, 'id'> & { id?: number }>
 ): Promise<Question> {
-  // Updated to match your actual endpoint from README
+
   const response = await fetch(`${API_BASE_URL}/question/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ 
-      question, // Important: use question here, not text
+      question, // QUESTION - ekki nota etext
       categoryId,
       answers 
     }),
@@ -186,7 +186,7 @@ export async function updateQuestion(
   return response.json();
 }
 
-// Re-export everything for simpler imports
+
 export * from './api-types';
 export * from './serverApi';
 export * from './clientApi';

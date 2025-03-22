@@ -67,25 +67,25 @@ async function apiFetch(endpoint: string, options?: RequestInit) {
     
     // Handle 404 specially
     if (response.status === 404) {
-      console.error(`❌ 404 Not Found: ${endpoint}`);
-      throw new Error('Resource not found');
+      console.error(`❌ 404 Fannst ekki: ${endpoint}`);
+      throw new Error('Auðlind fannst ekki');
     }
     
     // Handle other errors
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ Error Response Text: ${errorText}`);
+      console.error(`❌ Villa í svari: ${errorText}`);
       
       let errorData;
       try {
         errorData = JSON.parse(errorText);
-        console.error(`❌ Parsed Error Data:`, errorData);
+        console.error(`❌ Villa gögn:`, errorData);
       } catch (e) {
-        errorData = { message: errorText || 'Unknown error' };
-        console.error(`❌ Failed to parse error as JSON`);
+        errorData = { message: errorText || 'Óþekkt villa' };
+        console.error(`❌ Gat ekki túlkað villu sem JSON`);
       }
       
-      throw new Error(errorData.message || `API error: ${response.status}`);
+      throw new Error(errorData.message || `API villa: ${response.status}`);
     }
     
     // For DELETE requests, some APIs don't return content
@@ -99,15 +99,15 @@ async function apiFetch(endpoint: string, options?: RequestInit) {
     console.log(`✅ Successful ${method} response data:`, responseData);
     return responseData;
   } catch (error) {
-    console.error(`❌ API ERROR for ${endpoint}:`, error);
+    console.error(`❌ API VILLA fyrir ${endpoint}:`, error);
     
     // Enhanced error logging
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      console.error(`🔥 Network error - possible causes: 
-        1. CORS issues (check browser console for CORS errors)
-        2. Network connectivity issues
-        3. Backend server is down or sleeping
-        4. Invalid URL: ${url}
+      console.error(`🔥 Netvilla - mögulegar orsakir: 
+        1. CORS vandamál (athugaðu vafrann fyrir CORS villur)
+        2. Nettengingarvandamál
+        3. Bakendaþjónn niðri eða í svefni
+        4. Ógild slóð: ${url}
       `);
     }
     

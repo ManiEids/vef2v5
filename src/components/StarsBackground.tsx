@@ -15,13 +15,13 @@ export function StarsBackground() {
 
   useEffect(() => {
     const generateStars = () => {
-      const starCount = 100; // Reduced from 150 for better performance
+      const starCount = 100; 
       const newStars: Star[] = [];
       
       for (let i = 0; i < starCount; i++) {
         newStars.push({
           id: i,
-          size: Math.random() * 2.5, // Slightly smaller stars
+          size: Math.random() * 2.5, 
           top: Math.random() * 100,
           left: Math.random() * 100,
           animationDelay: `${Math.random() * 4}s`

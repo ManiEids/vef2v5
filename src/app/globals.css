@@ -10,7 +10,7 @@
   --card-border-color: rgba(150, 150, 255, 0.2);
 }
 
-/* Fix for scrolling issues */
+/* scroll vandræði   */
 html, body {
   height: auto;
   min-height: 100%;
@@ -25,16 +25,16 @@ body {
       rgb(var(--background-start-rgb)),
       rgb(var(--background-end-rgb))
     );
-  /* Remove the stars-bg.png reference or make it optional */
-  /* url('/stars-bg.png'); */
+
+
   min-height: 100vh;
   position: relative;
   z-index: 0;
 }
 
-/* Space theme elements */
+/* spaceað */
 .space-container {
-  overflow: visible; /* Changed from 'hidden' to allow scrolling */
+  overflow: visible; 
   position: relative;
 }
 
@@ -53,22 +53,22 @@ body {
   100% { opacity: 0.2; }
 }
 
-/* Card styling for space theme */
+/* space */
 .space-card {
   background: var(--card-bg-color);
   border: 1px solid var(--card-border-color);
   box-shadow: 0 4px 20px rgba(80, 100, 255, 0.2);
   backdrop-filter: blur(5px);
-  color: rgb(var(--foreground-rgb)); /* Ensure text is white */
+  color: rgb(var(--foreground-rgb)); 
 }
 
-/* Button styling for space theme */
+
 .space-button {
   background: linear-gradient(45deg, #4d21a6, #6d45d0);
   border: 1px solid rgba(150, 150, 255, 0.4);
   box-shadow: 0 2px 10px rgba(100, 100, 255, 0.3);
   transition: all 0.3s ease;
-  color: white; /* Ensure text is white */
+  color: white; 
 }
 
 .space-button:hover {
@@ -76,12 +76,10 @@ body {
   box-shadow: 0 4px 15px rgba(120, 120, 255, 0.5);
 }
 
-/* Custom text glow for headings */
 .text-glow {
   text-shadow: 0 0 10px rgba(150, 150, 255, 0.8);
 }
 
-/* Add contrast utility classes */
 .text-light {
   color: white !important;
 }
@@ -90,13 +88,13 @@ body {
   color: #1a1a2e !important;
 }
 
-/* Form elements with proper contrast */
+
 input, textarea, select {
   color: #1a1a2e;
   background-color: white;
 }
 
-/* Ensure container backgrounds have proper contrast with text */
+
 .bg-white, .bg-gray-100, .bg-gray-200 {
   color: #1a1a2e;
 }
@@ -105,7 +103,7 @@ input, textarea, select {
   color: white;
 }
 
-/* Space themed containers with proper text contrast */
+/*  text contrast */
 .content-container {
   background: rgba(30, 30, 60, 0.7);
   border-radius: 0.5rem;

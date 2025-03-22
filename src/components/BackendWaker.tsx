@@ -8,7 +8,6 @@ export function BackendWaker() {
   
   useEffect(() => {
     async function wakeUpBackend() {
-      // Use our proxy API in production to avoid CORS
       const useProxy = process.env.NODE_ENV === 'production';
       const endpointUrl = useProxy 
         ? '/api/proxy?path=/categories' 
@@ -36,9 +35,9 @@ export function BackendWaker() {
         console.error('Failed to wake up backend:', error); // Villa
         setStatus('error');
         
-        // Detect CORS issues
+        // finna ef CORS villur
         if (error instanceof TypeError && error.message === 'Failed to fetch') {
-          setErrorDetails('Connection failed. This might be due to CORS restrictions, network issues, or the backend server being down.'); // Tengi villa
+          setErrorDetails('Mistókts , athuga CORS villur og hvort REACT sé live.'); 
         } else {
           setErrorDetails(error instanceof Error ? error.message : 'Unknown error');
         }

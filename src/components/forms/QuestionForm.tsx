@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import { Answer, Category } from '@/services/api';
 
-// Defining answer form data type
+
 interface AnswerFormData {
   id?: number;
-  text: string;  // We use text in the form but map to answer when sending to API
+  text: string;  
   correct: boolean;
 }
 
@@ -40,7 +40,7 @@ export function QuestionForm({
     const updatedAnswers = [...answers];
     updatedAnswers[index] = { ...updatedAnswers[index], [field]: value };
 
-    // If this answer is set as correct, set all other answers as incorrect
+    // ef rétt, fjarlægja önnur rétt
     if (field === 'correct' && value === true) {
       updatedAnswers.forEach((answer, i) => {
         if (i !== index) {
@@ -57,14 +57,14 @@ export function QuestionForm({
   };
 
   const removeAnswer = (index: number) => {
-    // Passað að halda a.m.k. tveimur svörum
+    // min 2svör
     if (answers.length <= 2) {
       return;
     }
     
     const updatedAnswers = answers.filter((_, i) => i !== index);
     
-    // Ef við fjarlægðum rétta svarið, stillum fyrsta sem rétt
+    // fyrsta sett sem rétt ef rétt er removað
     if (answers[index].correct) {
       updatedAnswers[0] = { ...updatedAnswers[0], correct: true };
     }
@@ -76,24 +76,23 @@ export function QuestionForm({
     e.preventDefault();
     setError(null);
     
-    // Simple validation
+    // validate
     if (text.trim() === '') {
-      setError('Question cannot be empty'); // Tómt
-      return;
+      setError('Question cannot be empty'); 
     }
     
     if (answers.some(answer => answer.text.trim() === '')) {
-      setError('Answers cannot be empty'); // Tóm svör
+      setError('Answers cannot be empty'); 
       return;
     }
     
     if (!answers.some(answer => answer.correct)) {
-      setError('There must be at least one correct answer'); // Eitt rétt
+      setError('There must be at least one correct answer'); 
       return;
     }
     
     if (!selectedCategoryId && !categoryId) {
-      setError('Please select a category for the question'); // Veldu
+      setError('Please select a category for the question'); 
       return;
     }
 
@@ -107,7 +106,7 @@ export function QuestionForm({
       
       await onSubmit(activeCategoryId, text, answers);
       
-      // If this is a new question, clear the form
+      // ef ný - hreinsa
       if (!initialText) {
         setText('');
         setAnswers([
@@ -118,7 +117,7 @@ export function QuestionForm({
         ]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred'); // Villa
+      setError(err instanceof Error ? err.message : 'An error occurred'); 
     } finally {
       setLoading(false);
     }
@@ -147,7 +146,7 @@ export function QuestionForm({
             <option value="">Select a category</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
-                {category.title} {/* Changed from name to title */}
+                {category.title} {/* breytt */}
               </option>
             ))}
           </select>

@@ -1,12 +1,12 @@
 'use client';
 
 import { Category, Question, Answer } from './api-types';
-import { getApiUrl } from './simpleApi'; // Import the helper function
+import { getApiUrl } from './simpleApi'; 
 
 // Helper to normalize category data for frontend consumption
 const normalizeCategory = (category: any): Category => ({
   id: category.id,
-  title: category.title || '', // Backend uses title
+  title: category.title || '', 
   slug: category.slug
 });
 
@@ -41,15 +41,17 @@ export async function getCategories(): Promise<Category[]> {
     const response = await fetch(url, { cache: "no-store" });
     console.log("Response status:", response.status);
     if (!response.ok) {
+      // Ef svar er ekki OK, kasta villu
       const errorBody = await response.text();
-      console.error("Error fetching categories. Status:", response.status, "Body:", errorBody);
-      throw new Error(`Failed to fetch categories: ${response.status}`);
+      console.error("Villa við að sækja flokka:", response.status, errorBody);
+      throw new Error(`Villa við að sækja flokka: ${response.status}`);
     }
     const data = await response.json();
     console.log("Categories data received:", data);
     return data.data ? data.data : data;
   } catch (error) {
-    console.error("Exception in getCategories:", error);
+    // Ef einhver villa kemur upp
+    console.error("Villa í getCategories:", error);
     throw error; // rethrow so the UI can catch it as well
   }
 }
@@ -81,9 +83,10 @@ export async function getQuestionsByCategory(slug: string): Promise<Question[]> 
     const response = await fetch(url);
     console.log("Response status (questions):", response.status);
     if (!response.ok) {
+      // Ef svar er ekki OK, kasta villu
       const errorBody = await response.text();
-      console.error("Error fetching questions. Status:", response.status, "Body:", errorBody);
-      throw new Error(`Failed to fetch questions: ${response.status}`);
+      console.error("Villa við að sækja spurningar:", response.status, errorBody);
+      throw new Error(`Villa við að sækja spurningar: ${response.status}`);
     }
     const result = await response.json();
     console.log("Questions data received:", result);
@@ -92,7 +95,7 @@ export async function getQuestionsByCategory(slug: string): Promise<Question[]> 
       ? questionsData.map(normalizeQuestion) 
       : [];
   } catch (error) {
-    console.error("Exception in getQuestionsByCategory:", error);
+    console.error("Villa í getQuestionsByCategory:", error);
     throw error;
   }
 }

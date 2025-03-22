@@ -44,15 +44,15 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     try {
       console.log(`📋 Loading questions for category: ${slug}`);
       
-      // Enhanced cache busting with more random value
+      //random value
       const timestamp = Date.now() + Math.random().toString(36).substring(2, 10);
       
       try {
-        // Use the API's method to get questions by category
+        // frá bakenda
         const questionsData = await api.questions.getByCategory(slug);
         console.log(`✅ Successfully loaded ${questionsData.length} questions (unfiltered)`);
         
-        // Filter out invalid questions
+        // filtera 
         const validQuestions = questionsData.filter((q: Question) => 
           q && q.question && Array.isArray(q.answers) && q.answers.length > 0
         );
@@ -88,12 +88,11 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
   const handleSaveQuestion = async (questionData: any) => {
     try {
       if (selectedQuestion) {
-        // Update existing question
         console.log(`📝 Updating question ID ${selectedQuestion.id}`, questionData); // Uppfæri
         
         const updatedQuestion = await api.questions.update(
           selectedQuestion.id,
-          questionData.question,  // Using 'question' as the field name as expected by backend
+          questionData.question,
           questionData.categoryId,
           questionData.answers.map((a: any) => ({
             text: a.text,
@@ -103,10 +102,9 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         
         console.log('Question updated successfully:', updatedQuestion);
         
-        // Reload questions to reflect changes
+        // Reload 
         await loadQuestions(categorySlug);
       } else {
-        // Create new question
         console.log('Creating new question:', questionData);
         
         const newQuestion = await api.questions.create(
@@ -119,12 +117,9 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         );
         
         console.log('Question created successfully:', newQuestion);
-        
-        // Reload questions to reflect changes
         await loadQuestions(categorySlug);
       }
-      
-      // Close modal and reset selected question
+
       setIsModalOpen(false);
       setSelectedQuestion(null);
     } catch (err) {
@@ -141,10 +136,10 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     try {
       console.log(`🗑️ Attempting to delete question ID: ${question.id}`);
       
-      // First update the UI for immediate feedback
+      // uppfræa ui 
       setQuestions(prev => prev.filter(q => q.id !== question.id));
       
-      // Make the delete API call and wait for it to complete
+      // delete og sjá svar
       const result = await api.questions.delete(question.id);
       console.log(`🗑️ Delete response:`, result);
       
@@ -157,7 +152,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
       console.error(`❌ Delete error for question ID: ${question.id}:`, err);
       setError('Failed to delete question - please try again');
       
-      // Refresh questions from server to get current state
+      // refresh skoða server
       await loadQuestions(categorySlug);
     } finally {
       setLoading(false);
@@ -176,7 +171,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         </button>
       </div>
 
-      {/* Error message */}
+      {/* villa */}
       {error && (
         <div className="bg-red-100 text-red-800 p-3 rounded mb-4">
           {error}
@@ -217,7 +212,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         )}
       </div>
       
-      {/* Modal for creating/editing questions */}
+      {/* modal fyrir spurningar */}
       {isModalOpen && (
         <QuestionModal
           isOpen={isModalOpen}

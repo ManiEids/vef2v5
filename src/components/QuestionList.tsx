@@ -41,7 +41,7 @@ export function QuestionList({ questions }: QuestionListProps) {
     <div className="space-y-8">
       {questions.map((question) => (
         <div key={question.id} className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-xl font-semibold mb-4">{question.question}</h3> {/* Use question instead of text */}
+          <h3 className="text-xl font-semibold mb-4">{question.question}</h3> {/* question utfra bakenda , ekki text */}
           
           <div className="space-y-2">
             {question.answers.map((answer) => (
@@ -55,7 +55,7 @@ export function QuestionList({ questions }: QuestionListProps) {
                   className="mr-2"
                   disabled={feedback[question.id] !== undefined}
                 />
-                <label htmlFor={`answer-${answer.id}`}>{answer.answer}</label> {/* Use answer instead of text */}
+                <label htmlFor={`answer-${answer.id}`}>{answer.answer}</label> {/* ekki text */}
               </div>
             ))}
           </div>
@@ -70,7 +70,7 @@ export function QuestionList({ questions }: QuestionListProps) {
             </button>
           ) : (
             <div className={`mt-4 p-3 rounded ${feedback[question.id] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {feedback[question.id] ? 'Correct!' : 'Incorrect!'} // Rétt/Rangt
+              {feedback[question.id] ? 'Correct!' : 'Incorrect!'} 
             </div>
           )}
         </div>

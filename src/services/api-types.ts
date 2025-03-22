@@ -6,14 +6,14 @@ export interface Category {
 
 export interface Answer {
   id: number;
-  answer: string; // This is how the backend refers to the answer text
+  answer: string; 
   correct: boolean;
   questionId?: number;
 }
 
 export interface Question {
   id: number;
-  question: string; // This is how the backend refers to the question text
+  question: string; 
   categoryId: number;
   answers: Answer[];
   category?: Category;

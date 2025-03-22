@@ -32,13 +32,13 @@ export function CategoryManager() {
     }
   }
 
-  // Open modal for new category
+  //opnar modal til að búa til nýjan flokk
   const createCategory = () => {
     setSelectedCategory(null);
     setIsModalOpen(true);
   };
 
-  // Open modal with existing category data
+  // opnar modal til að breyta flokk
   const editCategory = (category: Category) => {
     setSelectedCategory(category);
     setIsModalOpen(true);
@@ -54,7 +54,7 @@ export function CategoryManager() {
       if (selectedCategory) {
         console.log(`✏️ Updating category: ${selectedCategory.slug}`); // Uppfæri
         
-        // Make the API call
+        // kalla API
         const updatedCategory = await api.categories.update(
           selectedCategory.slug,
           formData.title
@@ -62,17 +62,16 @@ export function CategoryManager() {
         
         console.log(`✅ Category updated successfully:`, updatedCategory); // Tókst
         
-        // Refresh the category list
+        // REFRSHA --> skoða hvort takist 
         await loadCategories();
       } else {
-        // Create new category
+  
         console.log(`➕ Creating new category:`, formData); // Bý til
         
         const newCategory = await api.categories.create(formData.title);
         
         console.log(`✅ Category created successfully:`, newCategory); // Tókst
         
-        // Refresh categories list
         await loadCategories();
       }
     } catch (err) {
@@ -88,21 +87,18 @@ export function CategoryManager() {
     setError(null);
     try {
       console.log(`🗑️ Attempting to delete category: ${category.slug}`); // Eyði
-      
-      // First update the UI for immediate feedback
+
       setCategories(prev => prev.filter(c => c.id !== category.id));
-      
-      // Make the delete API call
+
       const result = await api.categories.delete(category.slug);
       console.log(`🗑️ Delete response:`, result);
-      
-      // Refresh categories to ensure we have the latest data
+
       await loadCategories();
     } catch (err) {
-      console.error(`❌ Delete error for category: ${category.slug}:`, err); // Eyðing mistókst
-      setError('Failed to delete category - please try again'); // Eyðing mistókst
+      console.error(`❌ Delete error for category: ${category.slug}:`, err);
+      setError('Failed to delete category - please try again'); 
       
-      // Refresh categories to get current state
+      // refresh fyrir current state
       await loadCategories();
     } finally {
       setLoading(false);
@@ -125,17 +121,17 @@ export function CategoryManager() {
         </button>
       </div>
 
-      {/* Error message */}
+      {/* villu logga*/}
       {error && (
         <div className="bg-red-100 text-red-800 p-3 rounded mb-4">
           {error}
         </div>
       )}
       
-      {/* Category list */}
+      {/* cat list */}
       <div className="space-y-4">
         {categories.length === 0 ? (
-          <p>No categories yet.</p> // Engir
+          <p>No categories yet.</p> 
         ) : (
           categories.map(category => (
             <div key={category.id} className="bg-white text-black p-4 rounded shadow-md flex justify-between items-center">
@@ -162,7 +158,7 @@ export function CategoryManager() {
         )}
       </div>
 
-      {/* Modal for creating/editing categories */}
+      {/* modal create eða edit*/}
       <CategoryModal
         isOpen={isModalOpen}
         onClose={closeModal}
