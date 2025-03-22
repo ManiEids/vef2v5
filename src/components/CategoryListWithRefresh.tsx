@@ -21,7 +21,7 @@ export function CategoryListWithRefresh() {
       setCategories(data);
     } catch (err) {
       console.error('Failed to fetch categories:', err); // Villa
-      setError('Failed to load categories. The backend server may be starting up since it\'s on a free Render tier.'); // Villa
+      setError('Fail að loada - liklega er render að starta - tekur allt að 1 min  .'); // Villa
     } finally {
       setLoading(false);
     }
