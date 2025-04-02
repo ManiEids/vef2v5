@@ -325,6 +325,9 @@ export async function fetchQuestionsByCategory(categoryId: string): Promise<Ques
 }
 
 export async function fetchAllTestLocations(): Promise<TestLocation[]> {
+  const results: TestLocation[] = [];
+  
+  // Try to fetch the locationtest record with stadur field
   try {
     const LOCATION_QUERY = `
       query {
@@ -339,31 +342,73 @@ export async function fetchAllTestLocations(): Promise<TestLocation[]> {
       }
     `;
     
-    console.log('Fetching single locationtest record');
+    console.log('Fetching locationtest with stadur field');
     const locationData = await request({ query: LOCATION_QUERY });
     
-    if (locationData?.locationtest) {
-      console.log('Found a locationtest record');
-      return [{
+    if (locationData?.locationtest && locationData.locationtest.stadur) {
+      console.log('Found locationtest with stadur field');
+      results.push({
         id: locationData.locationtest.id,
         name: `Location at ${locationData.locationtest.stadur?.latitude?.toFixed(4) || 0}, ${locationData.locationtest.stadur?.longitude?.toFixed(4) || 0}`,
-        description: `A location from LocationTest model`,
+        description: `Staðsetning--> datocms Geolocation model (stadur field)`,
         location: {
           latitude: locationData.locationtest.stadur?.latitude || 0,
           longitude: locationData.locationtest.stadur?.longitude || 0
         },
         createdAt: locationData.locationtest._createdAt
-      }];
+      });
     }
   } catch (error) {
-    console.log('Error fetching locationtest:', error);
+    console.log('Error fetching locationtest with stadur:', error);
   }
   
+  // Try to fetch the locationtest record with berlin field (newly discovered field)
+  try {
+    const BERLIN_QUERY = `
+      query {
+        locationtest {
+          id
+          _createdAt
+          berlin {
+            latitude
+            longitude
+          }
+        }
+      }
+    `;
+    
+    console.log('Fetching locationtest with berlin field');
+    const berlinData = await request({ query: BERLIN_QUERY });
+    
+    if (berlinData?.locationtest && berlinData.locationtest.berlin) {
+      console.log('Found locationtest with berlin field');
+      results.push({
+        id: `${berlinData.locationtest.id}-berlin`,
+        name: `Berlin Location at ${berlinData.locationtest.berlin?.latitude?.toFixed(4) || 0}, ${berlinData.locationtest.berlin?.longitude?.toFixed(4) || 0}`,
+        description: `Staðsetning--> datocms Geolocation model (berlin field)`,
+        location: {
+          latitude: berlinData.locationtest.berlin?.latitude || 0,
+          longitude: berlinData.locationtest.berlin?.longitude || 0
+        },
+        createdAt: berlinData.locationtest._createdAt
+      });
+    }
+  } catch (error) {
+    console.log('Error fetching locationtest with berlin field:', error);
+  }
+  
+  // If we found any locations, return them
+  if (results.length > 0) {
+    console.log(`Found ${results.length} locations in total`);
+    return results;
+  }
+  
+  // If all attempts failed, create a dummy location as fallback
   console.log('No location data found, returning dummy location');
   return [{
     id: 'demo-1',
-    name: 'Example Location',
-    description: 'This is a demo location. Please add real locations in DatoCMS by creating a "LocationTest" record.',
+    name: 'Example Location (Berlin)',
+    description: 'This is a demo location. Please add real locations in DatoCMS by creating a "LocationTest" record with "stadur" or "berlin" field.',
     location: {
       latitude: 52.520008,
       longitude: 13.404954
@@ -392,7 +437,7 @@ export async function fetchTestLocationById(id: string): Promise<TestLocation | 
       return {
         id: testData.locationtest.id,
         name: `Location at ${testData.locationtest.stadur?.latitude.toFixed(4)}, ${testData.locationtest.stadur?.longitude.toFixed(4)}`,
-        description: `A location from LocationTest model`,
+        description: `Staðsetning--> datocms Geolocation model`,
         location: {
           latitude: testData.locationtest.stadur?.latitude || 0,
           longitude: testData.locationtest.stadur?.longitude || 0
