@@ -78,15 +78,15 @@ export default async function HomePage() {
           <div className="space-card mt-6">
             <div className="mb-4">
               <h2 className="mb-2">Staðsetningar</h2>
-              <p>Hér eru nokkrar staðsetningar sem hafa verið skráðar:</p>
+              <p>Hér eru staðsetningar sem hafa verið skráðar:</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {testLocations.slice(0, 4).map((location) => (
+              {testLocations.map((location) => (
                 <div key={location.id} className="space-card">
                   <h3>{location.name}</h3>
-                  {location.description && <p className="mb-2">{location.description}</p>}
-                  <Link href="/test-locations" className="text-sm text-blue-300 hover:text-blue-100">
-                    Sjá fleiri staðsetningar →
+                  <p className="text-sm text-gray-400">Hnit: {location.location.latitude.toFixed(4)}, {location.location.longitude.toFixed(4)}</p>
+                  <Link href="/test-locations" className="text-sm text-blue-300 hover:text-blue-100 mt-2 inline-block">
+                    Sjá nánar →
                   </Link>
                 </div>
               ))}
@@ -96,12 +96,12 @@ export default async function HomePage() {
             </div>
           </div>
         )}
-        <div className="mt-8">
-          <Link href="/test-locations" className="space-button mr-4">
+        <div className="mt-8 flex flex-wrap gap-4 justify-center">
+          <Link href="/test-locations" className="space-button">
             Skoða staðsetningar
           </Link>
           <Link href="/screenshots" className="space-button">
-            Skoða skjámyndir
+            Skoða skjámyndasafn
           </Link>
         </div>
       </div>

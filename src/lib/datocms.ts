@@ -349,8 +349,8 @@ export async function fetchQuestionsByCategory(categoryId: string): Promise<Ques
 export async function fetchAllTestLocations(): Promise<TestLocation[]> {
   const results: TestLocation[] = [];
   
-  // Try to fetch both location fields in a single query
   try {
+    // Modified query to ensure we get all location data properly
     const COMBINED_QUERY = `
       query {
         locationtest {
@@ -370,15 +370,16 @@ export async function fetchAllTestLocations(): Promise<TestLocation[]> {
     
     console.log('Sæki staðsetningar frá DatoCMS...');
     const data = await request({ query: COMBINED_QUERY });
+    console.log('Raw location data received:', JSON.stringify(data, null, 2));
     
     if (data?.locationtest) {
       // Add stadur location if it exists
       if (data.locationtest.stadur && 
-          data.locationtest.stadur.latitude && 
-          data.locationtest.stadur.longitude) {
+          typeof data.locationtest.stadur.latitude === 'number' && 
+          typeof data.locationtest.stadur.longitude === 'number') {
         console.log('Fann staðsetningu á Íslandi:', data.locationtest.stadur);
         results.push({
-          id: data.locationtest.id,
+          id: `${data.locationtest.id}-iceland`,
           name: `Ísland: ${data.locationtest.stadur.latitude.toFixed(4)}, ${data.locationtest.stadur.longitude.toFixed(4)}`,
           description: `Staðsetning--> DatoCMS staðsetningarmódel (stadur reitur)`,
           location: {
@@ -391,8 +392,8 @@ export async function fetchAllTestLocations(): Promise<TestLocation[]> {
       
       // Add berlin location if it exists
       if (data.locationtest.berlin && 
-          data.locationtest.berlin.latitude && 
-          data.locationtest.berlin.longitude) {
+          typeof data.locationtest.berlin.latitude === 'number' && 
+          typeof data.locationtest.berlin.longitude === 'number') {
         console.log('Fann staðsetningu í Berlín:', data.locationtest.berlin);
         results.push({
           id: `${data.locationtest.id}-berlin`,
@@ -432,9 +433,10 @@ export async function fetchAllTestLocations(): Promise<TestLocation[]> {
 }
 
 export async function fetchTestLocationById(id: string): Promise<TestLocation | null> {
-  // Check if this is a normal ID or a composite ID with "-berlin" suffix
-  const isBerlinLocation = id.endsWith('-berlin');
-  const baseId = isBerlinLocation ? id.replace('-berlin', '') : id;
+  // Extract the location type from the ID
+  const locationParts = id.split('-');
+  const baseId = locationParts[0];
+  const locationType = locationParts.length > 1 ? locationParts[1] : 'iceland';
   
   try {
     const LOCATION_TEST_QUERY = `
@@ -457,8 +459,8 @@ export async function fetchTestLocationById(id: string): Promise<TestLocation | 
     const testData = await request({ query: LOCATION_TEST_QUERY, variables: { id: baseId } });
     
     if (testData?.locationtest) {
-      // If it's a berlin location, return that
-      if (isBerlinLocation && testData.locationtest.berlin) {
+      // Return berlin location
+      if (locationType === 'berlin' && testData.locationtest.berlin) {
         return {
           id: `${testData.locationtest.id}-berlin`,
           name: `Berlín: ${testData.locationtest.berlin.latitude.toFixed(4)}, ${testData.locationtest.berlin.longitude.toFixed(4)}`,
@@ -470,10 +472,10 @@ export async function fetchTestLocationById(id: string): Promise<TestLocation | 
           createdAt: testData.locationtest._createdAt
         };
       } 
-      // Otherwise return the stadur location
+      // Return stadur location
       else if (testData.locationtest.stadur) {
         return {
-          id: testData.locationtest.id,
+          id: `${testData.locationtest.id}-iceland`,
           name: `Ísland: ${testData.locationtest.stadur.latitude.toFixed(4)}, ${testData.locationtest.stadur.longitude.toFixed(4)}`,
           description: `Staðsetning--> DatoCMS staðsetningarmódel (stadur reitur)`,
           location: {

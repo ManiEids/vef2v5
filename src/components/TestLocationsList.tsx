@@ -116,9 +116,9 @@ export function TestLocationsList() {
           Sýni {locations.length} staðsetningu(ar)
         </div>
       )}
-      <ul className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {locations.map((location) => (
-          <li key={location.id} className="space-card p-4">
+          <div key={location.id} className="space-card p-4">
             <h3 className="text-xl font-semibold mb-2">{location.name}</h3>
             {location.description && <p className="mb-2">{location.description}</p>}
             <div className="text-sm text-gray-400">
@@ -133,12 +133,17 @@ export function TestLocationsList() {
             >
               Skoða á Google Maps
             </a>
-          </li>
+          </div>
         ))}
-      </ul>
-      <Link href="/" className="inline-block mt-4 space-button">
-        Fara aftur á forsíðu
-      </Link>
+      </div>
+      <div className="mt-6 flex flex-wrap gap-4">
+        <Link href="/" className="space-button">
+          Fara aftur á forsíðu
+        </Link>
+        <Link href="/screenshots" className="space-button">
+          Skoða skjámyndasafn
+        </Link>
+      </div>
     </div>
   );
 }
