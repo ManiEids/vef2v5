@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Category } from '@/services/api-types';
+import { Category } from '@/lib/datocms';
 
 interface CategoryListProps {
   categories: Category[];
@@ -8,7 +8,7 @@ interface CategoryListProps {
 
 export function CategoryList({ categories }: CategoryListProps) {
   if (categories.length === 0) {
-    return <p>No categories found.</p>; // Engir
+    return <p>No categories found.</p>;
   }
 
   return (

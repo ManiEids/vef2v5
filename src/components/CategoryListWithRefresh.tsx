@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Category } from '@/services/api-types';
 import { CategoryList } from './CategoryList';
-import { ErrorMessage } from './ErrorMessage';
+import { ErrorMessage } from '@/components/ErrorMessage'; // Fix import path
 import { getCategories } from '@/services/clientApi';
+import { Category } from '@/lib/datocms';
 
 export function CategoryListWithRefresh() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -15,13 +15,13 @@ export function CategoryListWithRefresh() {
     setLoading(true);
     setError(null);
     try {
-      console.log('Fetching categories from client component'); // Sæki
+      console.log('Fetching categories from clientApi'); 
       const data = await getCategories();
-      console.log('Categories fetched:', data); // Tókst
+      console.log('Categories fetched:', data);
       setCategories(data);
     } catch (err) {
-      console.error('Failed to fetch categories:', err); // Villa
-      setError('Fail að loada - liklega er render að starta - tekur allt að 1 min  .'); // Villa
+      console.error('Failed to fetch categories:', err);
+      setError('Failed to load categories. The clientApi service may be unavailable.');
     } finally {
       setLoading(false);
     }
@@ -59,7 +59,7 @@ export function CategoryListWithRefresh() {
   if (!categories || categories.length === 0) {
     return (
       <div>
-        <ErrorMessage message="No categories found. The backend server may still be starting up." /> // Engir
+        <ErrorMessage message="No categories found. Please check your clientApi content." />
         <button 
           onClick={() => loadCategories()}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"

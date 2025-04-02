@@ -1,24 +1,27 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { api } from '@/services/simpleApi';
-import { Category, Question } from '@/services/api-types';
-import { QuestionModal } from './QuestionModal';
+import { fetchQuestionsByCategory, fetchAllCategories, Category, Question } from '@/lib/datocms';
+import { QuestionModal } from './QuestionModal'; // Add missing import
 
-export function QuestionManager({ categorySlug }: { categorySlug: string }) {
+interface QuestionManagerProps {
+  categorySlug: string;
+}
+
+export function QuestionManager({ categorySlug }: QuestionManagerProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [categoryId, setCategoryId] = useState<number>(0);
+  const [categoryId, setCategoryId] = useState<string>('');
 
   useEffect(() => {
     async function loadCategories() {
       try {
-        console.log('Loading categories...');
-        const categoriesData = await api.categories.getAll();
+        console.log('Loading categories from DatoCMS...');
+        const categoriesData = await fetchAllCategories();
         setCategories(categoriesData);
         const category = categoriesData.find((c: Category) => c.slug === categorySlug);
         if (category) {
@@ -44,17 +47,22 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     try {
       console.log(`📋 Loading questions for category: ${slug}`);
       
-      //random value
-      const timestamp = Date.now() + Math.random().toString(36).substring(2, 10);
-      
       try {
-        // frá bakenda
-        const questionsData = await api.questions.getByCategory(slug);
-        console.log(`✅ Successfully loaded ${questionsData.length} questions (unfiltered)`);
+        // Find category ID first
+        const categoriesData = await fetchAllCategories();
+        const category = categoriesData.find((c) => c.slug === slug);
         
-        // filtera 
+        if (!category) {
+          throw new Error(`Category with slug ${slug} not found`);
+        }
+        
+        // Fetch questions using category ID
+        const questionsData = await fetchQuestionsByCategory(category.id);
+        console.log(`✅ Successfully loaded ${questionsData.length} questions`);
+        
+        // Filter valid questions
         const validQuestions = questionsData.filter((q: Question) => 
-          q && q.question && Array.isArray(q.answers) && q.answers.length > 0
+          q && q.text && Array.isArray(q.answers) && q.answers.length > 0
         );
         
         console.log(`✅ After filtering: ${validQuestions.length} valid questions`);
@@ -62,7 +70,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         setError(null);
       } catch (error) {
         console.error(`❌ Error fetching questions:`, error);
-        setError('Failed to load questions');
+        setError('Failed to load questions from DatoCMS');
         setQuestions([]);
       }
     } catch (error) {
@@ -88,35 +96,15 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
   const handleSaveQuestion = async (questionData: any) => {
     try {
       if (selectedQuestion) {
-        console.log(`📝 Updating question ID ${selectedQuestion.id}`, questionData); // Uppfæri
+        console.log(`📝 Would update question ID ${selectedQuestion.id}`, questionData);
+        // This would need to be implemented using DatoCMS Management API
         
-        const updatedQuestion = await api.questions.update(
-          selectedQuestion.id,
-          questionData.question,
-          questionData.categoryId,
-          questionData.answers.map((a: any) => ({
-            text: a.text,
-            correct: a.correct
-          }))
-        );
-        
-        console.log('Question updated successfully:', updatedQuestion);
-        
-        // Reload 
+        // Reload questions to show updated data
         await loadQuestions(categorySlug);
       } else {
-        console.log('Creating new question:', questionData);
+        console.log('Would create new question:', questionData);
+        // This would need to be implemented using DatoCMS Management API
         
-        const newQuestion = await api.questions.create(
-          questionData.categoryId,
-          questionData.question,
-          questionData.answers.map((a: any) => ({
-            text: a.text,
-            correct: a.correct
-          }))
-        );
-        
-        console.log('Question created successfully:', newQuestion);
         await loadQuestions(categorySlug);
       }
 
@@ -134,25 +122,19 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
     setLoading(true);
     setError(null);
     try {
-      console.log(`🗑️ Attempting to delete question ID: ${question.id}`);
+      console.log(`🗑️ Would delete question ID: ${question.id}`);
       
-      // uppfræa ui 
+      // Optimistically update UI
       setQuestions(prev => prev.filter(q => q.id !== question.id));
       
-      // delete og sjá svar
-      const result = await api.questions.delete(question.id);
-      console.log(`🗑️ Delete response:`, result);
+      // This would need to be implemented using DatoCMS Management API
+      console.log(`✅ Would delete question ID: ${question.id}`);
       
-      if (result && result.success) {
-        console.log(`✅ Successfully deleted question ID: ${question.id}`);
-      } else {
-        throw new Error('Deletion may not have succeeded - refreshing data');
-      }
     } catch (err) {
       console.error(`❌ Delete error for question ID: ${question.id}:`, err);
       setError('Failed to delete question - please try again');
       
-      // refresh skoða server
+      // Refresh data
       await loadQuestions(categorySlug);
     } finally {
       setLoading(false);
@@ -171,7 +153,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         </button>
       </div>
 
-      {/* villa */}
+      {/* Error display */}
       {error && (
         <div className="bg-red-100 text-red-800 p-3 rounded mb-4">
           {error}
@@ -192,7 +174,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
           questions.map(question => (
             <div key={question.id} className="bg-white text-black p-4 rounded shadow-md">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="font-semibold">{question.question}</h3>
+                <h3 className="font-semibold">{question.text}</h3>
                 <button 
                   className="bg-blue-500 text-white py-1 px-3 rounded text-sm hover:bg-blue-600"
                   onClick={() => editQuestion(question)}
@@ -202,8 +184,8 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
               </div>
               <ul className="list-disc pl-6 mt-2">
                 {question.answers.map(answer => (
-                  <li key={answer.id} className={answer.correct ? 'text-green-600 font-medium' : ''}>
-                    {answer.answer} {answer.correct ? '(correct)' : ''}
+                  <li key={answer.id} className={answer.iscorrect ? 'text-green-600 font-medium' : ''}>
+                    {answer.text} {answer.iscorrect ? '(correct)' : ''}
                   </li>
                 ))}
               </ul>
@@ -212,7 +194,7 @@ export function QuestionManager({ categorySlug }: { categorySlug: string }) {
         )}
       </div>
       
-      {/* modal fyrir spurningar */}
+      {/* Question modal */}
       {isModalOpen && (
         <QuestionModal
           isOpen={isModalOpen}

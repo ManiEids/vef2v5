@@ -38,14 +38,17 @@ interface RequestParams {
 
 const isDev = process.env.NODE_ENV !== 'production';
 
+// Use provided token if environment variable is not set
+const DATOCMS_API_TOKEN = process.env.DATOCMS_API_TOKEN || 'e8582f6e14ff731e41a93b6457f001';
+
 // F: request fall
 export function request({ query, variables = {}, includeDrafts = false, excludeInvalid = false }: RequestParams): Promise<any> {
-  const headers: Record<string, string> = { authorization: `Bearer ${process.env.DATOCMS_API_TOKEN}` };
+  const headers: Record<string, string> = { authorization: `Bearer ${DATOCMS_API_TOKEN}` };
   if (includeDrafts) { headers['X-Include-Drafts'] = 'true'; }
   if (excludeInvalid) { headers['X-Exclude-Invalid'] = 'true'; }
   const client = new GraphQLClient('https://graphql.datocms.com', { headers });
   return client.request(query, variables).catch((error: any) => {
-    console.log('DatoCMS Request:', { endpoint: 'https://graphql.datocms.com', token: process.env.DATOCMS_API_TOKEN ? `${process.env.DATOCMS_API_TOKEN.substring(0, 5)}...` : 'Missing', query: query.substring(0, 100) + '...', error });
+    console.log('DatoCMS Request:', { endpoint: 'https://graphql.datocms.com', token: DATOCMS_API_TOKEN ? `${DATOCMS_API_TOKEN.substring(0, 5)}...` : 'Missing', query: query.substring(0, 100) + '...', error });
     throw error;
   });
 }

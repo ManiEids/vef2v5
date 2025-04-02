@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Category } from '@/services/api-types';
+import { Category } from '@/lib/datocms';
 
 interface CategoryModalProps {
   isOpen: boolean;
@@ -27,7 +27,7 @@ export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryMod
 
   const validateForm = () => {
     if (!title.trim()) {
-      setError('Category title cannot be empty'); // Tómt
+      setError('Category title cannot be empty');
       return false;
     }
     return true;
@@ -58,7 +58,7 @@ export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryMod
       <div className="bg-white text-black rounded-lg shadow-lg w-full max-w-md overflow-y-auto">
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-4">
-            {category ? 'Edit Category' : 'Add New Category'} // Breyta/Nýtt
+            {category ? 'Edit Category' : 'Add New Category'}
           </h2>
           
           {error && (
@@ -69,7 +69,7 @@ export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryMod
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block mb-1 font-medium">Category Title:</label> // Titill
+              <label className="block mb-1 font-medium">Category Title:</label>
               <input 
                 type="text" 
                 className="w-full p-2 border rounded" 
@@ -92,7 +92,7 @@ export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryMod
                 disabled={loading}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
               >
-                {loading ? 'Saving...' : category ? 'Update' : 'Create'} // Vista/Uppfæra/Nýtt
+                {loading ? 'Saving...' : category ? 'Update' : 'Create'}
               </button>
             </div>
           </form>

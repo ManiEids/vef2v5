@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { api } from '@/services/simpleApi';
-import { Category } from '@/services/api-types';
+import { fetchAllCategories, Category } from '@/lib/datocms';
 import { CategoryModal } from './CategoryModal';
 
 export function CategoryManager() {
@@ -20,25 +19,23 @@ export function CategoryManager() {
     setLoading(true);
     setError(null);
     try {
-      console.log(`📋 Loading categories`); // Hleð
-      const categoriesData = await api.categories.getAll();
-      console.log(`✅ Successfully loaded ${categoriesData.length} categories`); // Tókst
+      console.log(`📋 Loading categories from DatoCMS`);
+      const categoriesData = await fetchAllCategories();
+      console.log(`✅ Successfully loaded ${categoriesData.length} categories`);
       setCategories(categoriesData);
     } catch (err) {
-      console.error(`❌ Failed to load categories:`, err); // Villa
-      setError('Failed to load categories'); // Villa
+      console.error(`❌ Failed to load categories:`, err);
+      setError('Failed to load categories from DatoCMS');
     } finally {
       setLoading(false);
     }
   }
 
-  //opnar modal til að búa til nýjan flokk
   const createCategory = () => {
     setSelectedCategory(null);
     setIsModalOpen(true);
   };
 
-  // opnar modal til að breyta flokk
   const editCategory = (category: Category) => {
     setSelectedCategory(category);
     setIsModalOpen(true);
@@ -52,53 +49,30 @@ export function CategoryManager() {
   const saveCategory = async (formData: { title: string }) => {
     try {
       if (selectedCategory) {
-        console.log(`✏️ Updating category: ${selectedCategory.slug}`); // Uppfæri
-        
-        // kalla API
-        const updatedCategory = await api.categories.update(
-          selectedCategory.slug,
-          formData.title
-        );
-        
-        console.log(`✅ Category updated successfully:`, updatedCategory); // Tókst
-        
-        // REFRSHA --> skoða hvort takist 
+        console.log(`✏️ Would update category in DatoCMS: ${selectedCategory.slug} - ${formData.title}`);
         await loadCategories();
       } else {
-  
-        console.log(`➕ Creating new category:`, formData); // Bý til
-        
-        const newCategory = await api.categories.create(formData.title);
-        
-        console.log(`✅ Category created successfully:`, newCategory); // Tókst
-        
+        console.log(`➕ Would create new category in DatoCMS: ${formData.title}`);
         await loadCategories();
       }
     } catch (err) {
-      console.error(`❌ Failed to save category:`, err); // Vista mistókst
+      console.error(`❌ Failed to save category:`, err);
       throw err;
     }
   };
 
   const deleteCategory = async (category: Category) => {
-    if (!confirm(`Are you sure you want to delete the category "${category.title}" and all its questions?`)) return;
+    if (!confirm(`Are you sure you want to delete the category "${category.title}"?`)) return;
     
     setLoading(true);
     setError(null);
     try {
-      console.log(`🗑️ Attempting to delete category: ${category.slug}`); // Eyði
-
+      console.log(`🗑️ Would delete category from DatoCMS: ${category.slug}`);
       setCategories(prev => prev.filter(c => c.id !== category.id));
-
-      const result = await api.categories.delete(category.slug);
-      console.log(`🗑️ Delete response:`, result);
-
       await loadCategories();
     } catch (err) {
       console.error(`❌ Delete error for category: ${category.slug}:`, err);
-      setError('Failed to delete category - please try again'); 
-      
-      // refresh fyrir current state
+      setError('Failed to delete category - please try again');
       await loadCategories();
     } finally {
       setLoading(false);
@@ -106,7 +80,7 @@ export function CategoryManager() {
   };
 
   if (loading) {
-    return <div className="animate-pulse p-4">Loading categories...</div>; // Hleð flokka
+    return <div className="animate-pulse p-4">Loading categories...</div>;
   }
 
   return (
@@ -121,14 +95,12 @@ export function CategoryManager() {
         </button>
       </div>
 
-      {/* villu logga*/}
       {error && (
         <div className="bg-red-100 text-red-800 p-3 rounded mb-4">
           {error}
         </div>
       )}
       
-      {/* cat list */}
       <div className="space-y-4">
         {categories.length === 0 ? (
           <p>No categories yet.</p> 
@@ -158,7 +130,6 @@ export function CategoryManager() {
         )}
       </div>
 
-      {/* modal create eða edit*/}
       <CategoryModal
         isOpen={isModalOpen}
         onClose={closeModal}
