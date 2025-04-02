@@ -507,7 +507,13 @@ export async function fetchAllScreenshots(): Promise<Screenshot[]> {
           title
           width
           height
-          responsiveImage(imgixParams: { fit: crop, w: 800, h: 600, auto: format }) {
+          responsiveImage(imgixParams: { 
+            fit: max,
+            w: 800, 
+            h: 600,
+            auto: format,
+            q: 80
+          }) {
             src
             width
             height

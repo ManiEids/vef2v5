@@ -5,7 +5,6 @@ import { Screenshot } from '@/lib/datocms';
 import { getScreenshots } from '@/services/clientApi';
 import { ErrorMessage } from './ErrorMessage';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export function ScreenshotGallery() {
   const [screenshots, setScreenshots] = useState<Screenshot[]>([]);
@@ -97,26 +96,27 @@ export function ScreenshotGallery() {
         <p className="text-gray-400 mb-4">Sýni {allImages.length} skjámynd(ir)</p>
       )}
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {allImages.map((image, index) => (
           <div 
             key={`${image.screenshotId}-${image.id}`} 
-            className="space-card p-2 overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
+            className="space-card overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
             onClick={() => openLightbox(index)}
           >
-            <div className="relative aspect-[4/3] w-full">
-              {/* Use next/image with objectFit="contain" to prevent skewing */}
-              <Image
+            {/* Fixed height container to prevent skewing */}
+            <div className="h-[200px] md:h-[240px] relative bg-gray-900 flex items-center justify-center">
+              {/* Use regular img tag for more consistent display */}
+              <img
                 src={image.responsiveImage?.src || image.url}
                 alt={image.alt || 'Skjámynd'}
-                fill
-                className="object-contain bg-gray-900"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                placeholder={image.responsiveImage?.base64 ? "blur" : "empty"}
-                blurDataURL={image.responsiveImage?.base64}
+                className="max-h-full max-w-full object-contain"
+                style={{ 
+                  display: 'block',
+                  margin: '0 auto'
+                }}
               />
             </div>
-            <div className="p-2 mt-2">
+            <div className="p-3 mt-1">
               <p className="text-sm text-gray-400">
                 {new Date(image.createdAt).toLocaleDateString('is-IS')}
               </p>
@@ -126,6 +126,7 @@ export function ScreenshotGallery() {
         ))}
       </div>
 
+      {/* Lightbox for viewing full-size images */}
       {activeIndex !== -1 && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
@@ -149,6 +150,28 @@ export function ScreenshotGallery() {
                   {allImages[activeIndex].title}
                 </div>
               )}
+            </div>
+            
+            {/* Navigation buttons */}
+            <div className="flex justify-between mt-4">
+              <button
+                className="bg-white bg-opacity-20 text-white py-1 px-4 rounded hover:bg-opacity-30"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveIndex(prev => (prev > 0 ? prev - 1 : allImages.length - 1));
+                }}
+              >
+                ← Fyrri
+              </button>
+              <button
+                className="bg-white bg-opacity-20 text-white py-1 px-4 rounded hover:bg-opacity-30"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveIndex(prev => (prev < allImages.length - 1 ? prev + 1 : 0));
+                }}
+              >
+                Næst →
+              </button>
             </div>
           </div>
         </div>
