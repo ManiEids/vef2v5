@@ -1,14 +1,11 @@
-/**
- * Type definitions for API responses
- */
+// skilgreiningar fyrir API gögn
 
 export interface Category {
-  id: string | number;
-  name: string;
-  title: string; // Add title property that's being used in CategoryList.tsx
-  slug?: string;
-  description?: string;
-  // Add any other properties that might be used in CategoryList component
-}
-
-// Add other API types as needed
+    id: string | number;
+    name: string;
+    title: string; // Titill flokks
+    slug?: string;
+    description?: string;
+    // Hægt að bæta við fleiri eiginleikum ef þarf
+  }
+  

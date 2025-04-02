@@ -4,8 +4,8 @@ import { StarsBackground } from '@/components/StarsBackground';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Verkefni 5 - Vefforritun 2 2025 - ManiEiðsson- Headless CMS Quiz',
-  description: 'Quiz application using Next.js and DatoCMS',
+  title: 'Verkefni 5 - Vefforritun 2 | Eigandi: Máni Eiðsson',
+  description: 'DatoCMS sýnidæmi next js og fleira',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

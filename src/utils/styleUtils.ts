@@ -30,13 +30,10 @@ export function getTextContrastClass(bgClass: string): string {
   return 'text-gray-900';
 }
 
-/**
- * Combines class names and ensures text contrast
- */
+// Sameinar class og bætir við réttum textalitum
 export function combineClasses(baseClass: string, additionalClasses: string = ''): string {
   const combined = `${baseClass} ${additionalClasses}`;
   
-  // If we have explicitly set text color in additional classes, don't override it
   if (additionalClasses.includes('text-')) {
     return combined;
   }

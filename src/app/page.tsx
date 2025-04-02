@@ -1,10 +1,9 @@
-// F: Forsíða
 import Link from 'next/link';
 import { fetchHomePage, fetchAllCategories, fetchAllTestLocations, Category } from '@/lib/datocms';
 
+// F: Skilar forsíðu vefjarins
 export default async function HomePage() {
   try {
-    // Log the API token in development mode for debugging
     if (process.env.NODE_ENV !== 'production') {
       console.log('Using DatoCMS API token:', 
         process.env.DATOCMS_API_TOKEN ? 
@@ -17,7 +16,7 @@ export default async function HomePage() {
     const testLocations = await fetchAllTestLocations();
     const fallbackImageUrl = 'https://images.unsplash.com/photo-1465101162946-4377e57745c3?q=80&w=1200&auto=format&fit=crop';
 
-    // F: hjálparfall til að fjarlægja leiðbeiningar
+    // F: Fjarlægir leiðbeiningartexta úr HTML
     const removeGuides = (content: string): string => {
       const guidePhrases = ['Leiðbeiningar:', '← Go to content editing', 'Edit model', 'Edit field', 'Search...'];
       for (const phrase of guidePhrases) {
@@ -30,9 +29,10 @@ export default async function HomePage() {
     return (
       <div>
         <header className="text-center mb-8">
-          <h1 className="text-glow mb-2">{homeData?.title || 'Verkefni 5 - Vefforritun 2'}</h1>
+          <h1 className="text-glow mb-2">
+            {homeData?.title || 'Verkefni 5 - Vefforritun 2'} - Eigandi: Máni Eiðsson
+          </h1>
           <p className="mb-6">{homeData?.subtitle || 'Spurningaleikur með DatoCMS'}</p>
-          {/* Check both headerImage and headerimage since DatoCMS fields may vary */}
           {(homeData?.headerImage?.url || homeData?.headerimage?.url) ? (
             <div className="mb-6 flex flex-col items-center">
               <img 

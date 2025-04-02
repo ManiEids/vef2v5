@@ -8,14 +8,15 @@ interface CategoryClientProps {
   category: Category & { questions: Question[] };
 }
 
+// F: Sýnir spurningaflokk og spurningar hans
 export default function CategoryClient({ category }: CategoryClientProps) {
   const router = useRouter();
-  
+
+  // F: Fer til baka á forsíðu
   const handleBackClick = () => {
     router.push('/');
   };
 
-  // Ensure questions is always an array
   const questions = category.questions || [];
 
   return (
