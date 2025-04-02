@@ -9,14 +9,15 @@ export default async function HomePage() {
     const testLocations = await fetchAllTestLocations();
     const fallbackImageUrl = 'https://images.unsplash.com/photo-1465101162946-4377e57745c3?q=80&w=1200&auto=format&fit=crop';
 
-    function removeGuides(content: string): string {
+    // F: hjálparfall til að fjarlægja leiðbeiningar
+    const removeGuides = (content: string): string => {
       const guidePhrases = ['Leiðbeiningar:', '← Go to content editing', 'Edit model', 'Edit field', 'Search...'];
       for (const phrase of guidePhrases) {
         const index = content.indexOf(phrase);
         if (index !== -1) { return content.substring(0, index).trim(); }
       }
       return content;
-    }
+    };
 
     return (
       <div>
