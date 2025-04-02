@@ -2,5 +2,5 @@ prisma/
 src/lib/
 src/routes/
 
-# Remove or comment any line that excludes src/lib
-# src/lib
+# Fjarlægjum eða kommenta út vegalínu með src/lib til að leyfa henni að vera með
+# src/lib/
