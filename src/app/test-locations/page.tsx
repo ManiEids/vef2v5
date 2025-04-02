@@ -5,15 +5,18 @@ import { fetchAllTestLocations, TestLocation } from '@/lib/datocms';
 export default async function TestLocationsPage() {
   const testLocations = await fetchAllTestLocations();
   const locale = process.env.NEXT_PUBLIC_LOCALE || 'is-IS';
+
   const formatDate = (dateString: string): string => new Date(dateString).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-  function removeGuides(content: string): string {
+
+  const removeGuides = (content: string): string => {
     const guidePhrases = ['Hvernig á að bæta við', '← Go to content editing', 'Edit model', 'Edit field', 'Search...'];
     for (const phrase of guidePhrases) {
       const index = content.indexOf(phrase);
       if (index !== -1) { return content.substring(0, index).trim(); }
     }
     return content;
-  }
+  };
+
   return (
     <div className="space-card">
       <h1 className="mb-6">Staðsetningar</h1>

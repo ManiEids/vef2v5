@@ -14,6 +14,7 @@ const normalizeCategory = (category: any): Category => ({
 const normalizeQuestion = (question: any): Question => ({
   id: question.id,
   question: question.question || '', // Backend uses question
+  text: question.question || '', // Add text field for DatoCMS compatibility
   categoryId: question.categoryId,
   category: question.category ? normalizeCategory(question.category) : undefined,
   answers: Array.isArray(question.answers) 
@@ -25,7 +26,9 @@ const normalizeQuestion = (question: any): Question => ({
 const normalizeAnswer = (answer: any): Answer => ({
   id: answer.id,
   answer: answer.answer || '', // Backend uses answer
+  text: answer.answer || '', // Add text field for DatoCMS compatibility
   correct: answer.correct || false,
+  iscorrect: answer.correct || false, // Add iscorrect for DatoCMS compatibility
   questionId: answer.questionId
 });
 

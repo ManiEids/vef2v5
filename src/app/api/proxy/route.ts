@@ -124,11 +124,62 @@ async function handleProxyRequest(request: NextRequest, method: string) {
 }
 
 export async function GET(request: NextRequest) {
-  return handleProxyRequest(request, 'GET');
+  const { searchParams } = new URL(request.url);
+  const path = searchParams.get('path');
+  
+  if (!path) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Path parameter is required' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+  
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${path}`;
+  
+  try {
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+    
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('API proxy error:', error);
+    return new NextResponse(
+      JSON.stringify({ error: 'Failed to fetch data from API' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
-  return handleProxyRequest(request, 'POST');
+  const { searchParams } = new URL(request.url);
+  const path = searchParams.get('path');
+  
+  if (!path) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Path parameter is required' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+  
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}${path}`;
+  
+  try {
+    const body = await request.json();
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('API proxy error:', error);
+    return new NextResponse(
+      JSON.stringify({ error: 'Failed to send data to API' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 }
 
 export async function PUT(request: NextRequest) {

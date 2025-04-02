@@ -5,7 +5,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import QuestionList from '@/components/QuestionList';
 import { getCategory, getQuestionsByCategory } from '@/services/clientApi';
 import { Category as ApiCategory, Question as ApiQuestion } from '@/services/api-types';
-import { Question as DatoCMSQuestion } from '@/lib/datocms';
+import { Question as DatoCMSQuestion, Answer as DatoCMSAnswer } from '@/lib/datocms';
 
 export function CategoryQuestionsDisplay({ slug }: { slug: string }) {
   const [category, setCategory] = useState<ApiCategory | null>(null);
@@ -26,12 +26,28 @@ export function CategoryQuestionsDisplay({ slug }: { slug: string }) {
         
         setCategory(categoryData);
         
-        // Transform questions to match DatoCMSQuestion type
-        const transformedQuestions = questionsData.map((q: ApiQuestion) => ({
-          ...q,
-          text: (q as any).text || '',
-          answers: q.answers || []
-        })) as DatoCMSQuestion[];
+        // Fullkomin umbreyting á spurningum til að passa við DatoCMS gerð
+        const transformedQuestions = questionsData.map((q: ApiQuestion) => {
+          // Umbreyta svörum fyrst
+          const transformedAnswers: DatoCMSAnswer[] = (q.answers || []).map(a => ({
+            id: a.id?.toString() || '',
+            text: a.answer || a.text || '',
+            iscorrect: a.correct === true || a.iscorrect === true
+          }));
+          
+          // Skila síðan umbreyttri spurningu með umbreyttum svörum
+          return {
+            id: q.id?.toString() || '',
+            text: q.question || q.text || '',
+            answers: transformedAnswers,
+            category: q.category ? {
+              id: q.category.id?.toString() || '',
+              title: q.category.title || '',
+              slug: q.category.slug || '',
+              description: q.category.description || ''
+            } : undefined
+          } as DatoCMSQuestion;
+        });
         
         setQuestions(transformedQuestions);
       } catch (err) {

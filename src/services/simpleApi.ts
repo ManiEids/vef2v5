@@ -6,16 +6,19 @@
 const useProxy = process.env.NODE_ENV === 'production'; // Use proxy in production to avoid CORS issues
 console.log('API mode:', useProxy ? 'Using proxy to avoid CORS' : 'Direct API access');
 
-// Function to determine the right API URL based on environment
+// F: Hjálparfall til að fá rétta vefslóð fyrir API
 export function getApiUrl(endpoint: string): string {
-  if (useProxy) {
-    // In production, use our proxy API endpoint
-    return `/api/proxy?path=${encodeURIComponent(endpoint)}`;
-  } else {
-    // In development, use the direct API URL
-    const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://vef2v3.onrender.com';
-    return `${API_URL}${endpoint}`;
+  // For production, use our API proxy
+  if (process.env.NODE_ENV === 'production') {
+    // Remove leading slash if present for consistency
+    const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return `/api/proxy?path=${path}`;
   }
+  
+  // For development, use the direct API URL
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+  const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${baseUrl}${path}`;
 }
 
 // Enhanced logging helper
