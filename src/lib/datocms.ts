@@ -7,8 +7,20 @@ export interface Category {
   description: string; 
   questions?: Question[]; 
 }
-export interface Answer { id: string; text: string; iscorrect: boolean; }
-export interface Question { id: string; text: string; category?: Category; answers: Answer[]; }
+
+export interface Answer { 
+  id: string; 
+  text: string; 
+  iscorrect: boolean; 
+}
+
+export interface Question { 
+  id: string; 
+  text: string; 
+  category?: Category; 
+  answers: Answer[]; 
+}
+
 export interface HomePage { 
   title: string; 
   subtitle: string; 
@@ -19,9 +31,30 @@ export interface HomePage {
     width?: number; 
     height?: number; 
     blurUpThumb?: string; 
-    responsiveImage?: { src: string; width: number; height: number; alt: string; base64: string; }; 
+    responsiveImage?: { 
+      src: string; 
+      width: number; 
+      height: number; 
+      alt: string; 
+      base64: string; 
+    }; 
+  };
+  headerimage?: { 
+    url: string; 
+    alt: string; 
+    width?: number; 
+    height?: number; 
+    blurUpThumb?: string; 
+    responsiveImage?: { 
+      src: string; 
+      width: number; 
+      height: number; 
+      alt: string; 
+      base64: string; 
+    }; 
   };
 }
+
 export interface TestLocation { 
   id: string; 
   name: string; 
@@ -29,6 +62,7 @@ export interface TestLocation {
   location: { latitude: number; longitude: number; }; 
   createdAt: string; 
 }
+
 interface RequestParams { 
   query: string; 
   variables?: Record<string, any>; 
@@ -37,16 +71,21 @@ interface RequestParams {
 }
 
 const isDev = process.env.NODE_ENV !== 'production';
-
 const DATOCMS_API_TOKEN = process.env.DATOCMS_API_TOKEN || 'e8582f6e14ff731e41a93b6457f001';
 
 export function request({ query, variables = {}, includeDrafts = false, excludeInvalid = false }: RequestParams): Promise<any> {
   const headers: Record<string, string> = { authorization: `Bearer ${DATOCMS_API_TOKEN}` };
   if (includeDrafts) { headers['X-Include-Drafts'] = 'true'; }
   if (excludeInvalid) { headers['X-Exclude-Invalid'] = 'true'; }
+  
   const client = new GraphQLClient('https://graphql.datocms.com', { headers });
   return client.request(query, variables).catch((error: any) => {
-    console.log('DatoCMS Request:', { endpoint: 'https://graphql.datocms.com', token: DATOCMS_API_TOKEN ? `${DATOCMS_API_TOKEN.substring(0, 5)}...` : 'Missing', query: query.substring(0, 100) + '...', error });
+    console.log('DatoCMS Request:', { 
+      endpoint: 'https://graphql.datocms.com', 
+      token: DATOCMS_API_TOKEN ? `${DATOCMS_API_TOKEN.substring(0, 5)}...` : 'Missing', 
+      query: query.substring(0, 100) + '...', 
+      error 
+    });
     throw error;
   });
 }
@@ -65,7 +104,9 @@ export async function fetchAllCategories(): Promise<Category[]> {
   try {
     const data = await request({ query: QUERY });
     return data?.allCategories || [];
-  } catch (error) { return []; }
+  } catch (error) { 
+    return []; 
+  }
 }
 
 export async function fetchCategoryBySlug(slug: string): Promise<{ category: Category }> {
@@ -83,10 +124,12 @@ export async function fetchCategoryBySlug(slug: string): Promise<{ category: Cat
     console.log(`Fetching category with slug: ${slug}`);
     const data = await request({ query: QUERY, variables: { slug } });
     console.log('Category data received:', data);
+    
     if (!data?.category) { 
       console.error(`No category found with slug: ${slug}`);
       throw new Error(`Category with slug '${slug}' not found`); 
     }
+    
     return { category: data.category };
   } catch (error) { 
     console.error(`Error fetching category by slug ${slug}:`, error);
@@ -99,6 +142,7 @@ export async function fetchQuestionsByCategorySlug(categorySlug: string): Promis
   if (!categoryData.category) {
     return [];
   }
+  
   const QUERY = `
     query QuestionsByCategory($categoryId: ItemId) {
       allQuestions(filter: {category: {eq: $categoryId}}) {
@@ -112,6 +156,7 @@ export async function fetchQuestionsByCategorySlug(categorySlug: string): Promis
       }
     }
   `;
+  
   try {
     console.log(`Fetching questions for category ID: ${categoryData.category.id}`);
     const data = await request({ 
@@ -119,8 +164,10 @@ export async function fetchQuestionsByCategorySlug(categorySlug: string): Promis
       variables: { categoryId: categoryData.category.id }
     });
     console.log('Questions data received:', data);
+    
     if (!data?.allQuestions || data.allQuestions.length === 0) {
       console.log('No questions found for this category. Trying alternative query...');
+      
       const ALL_QUESTIONS = `
         query {
           allQuestions {
@@ -137,8 +184,10 @@ export async function fetchQuestionsByCategorySlug(categorySlug: string): Promis
           }
         }
       `;
+      
       const allData = await request({ query: ALL_QUESTIONS });
       console.log('All questions data:', allData);
+      
       if (allData?.allQuestions) {
         const filteredQuestions = allData.allQuestions.filter(
           (q: Question) => q.category && q.category.id === categoryData.category.id
@@ -147,6 +196,7 @@ export async function fetchQuestionsByCategorySlug(categorySlug: string): Promis
         return filteredQuestions;
       }
     }
+    
     return data?.allQuestions || [];
   } catch (error) {
     console.error('Error fetching questions for category:', error);
@@ -172,7 +222,9 @@ export async function fetchQuestionsByCategoryId(categoryId: string): Promise<Qu
   try {
     const data = await request({ query: QUERY, variables: { categoryId } });
     return data?.allQuestions || [];
-  } catch (error) { return []; }
+  } catch (error) { 
+    return []; 
+  }
 }
 
 export async function fetchHomePage(): Promise<HomePage> {
@@ -194,16 +246,26 @@ export async function fetchHomePage(): Promise<HomePage> {
   try {
     const data = await request({ query: QUERY, variables: {} });
     console.log('Homepage data:', data);
+    
     if (data?.allHomePages && data.allHomePages.length > 0) {
       return {
         ...data.allHomePages[0],
         headerImage: data.allHomePages[0].headerimage
       };
     }
-    return { title: 'Quiz App - Mani Eiðsson', subtitle: 'Spurningar - Eitthvað random smíða á DatoCMS', description: 'veldu flokk til að byrja' };
+    
+    return { 
+      title: 'Quiz App - Mani Eiðsson', 
+      subtitle: 'Spurningar - Eitthvað random smíða á DatoCMS', 
+      description: 'veldu flokk til að byrja' 
+    };
   } catch (error) {
     console.error('Error fetching homepage:', error);
-    return { title: 'Quiz App - Mani Eiðsson', subtitle: 'Spurningar - Eitthvað random smíða á DatoCMS', description: 'veldu flokk til að byrja' };
+    return { 
+      title: 'Quiz App - Mani Eiðsson', 
+      subtitle: 'Spurningar - Eitthvað random smíða á DatoCMS', 
+      description: 'veldu flokk til að byrja' 
+    };
   }
 }
 
@@ -229,7 +291,9 @@ export async function fetchAllQuestions(): Promise<Question[]> {
   try {
     const data = await request({ query: QUERY, variables: {} });
     return data?.allQuestions || [];
-  } catch (error) { return []; }
+  } catch (error) { 
+    return []; 
+  }
 }
 
 export async function fetchQuestionsByCategory(categoryId: string): Promise<Question[]> {
@@ -254,7 +318,9 @@ export async function fetchQuestionsByCategory(categoryId: string): Promise<Ques
   try {
     const data = await request({ query: QUERY, variables: { categoryId } });
     return data?.allQuestions || [];
-  } catch (error) { return []; }
+  } catch (error) { 
+    return []; 
+  }
 }
 
 export async function fetchAllTestLocations(): Promise<TestLocation[]> {
