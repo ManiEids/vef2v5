@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { QuestionList } from '@/components/QuestionList';
+import React, { useState, useEffect } from 'react';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import QuestionList from '@/components/QuestionList';
 import { getCategory, getQuestionsByCategory } from '@/services/clientApi';
 import { Category, Question } from '@/services/api-types';
 
