@@ -197,11 +197,11 @@ export async function fetchQuestionsByCategory(categoryId: string): Promise<Ques
   } catch (error) { return []; }
 }
 
-// F: fetchAllTestLocations fall
+// F: fetchAllTestLocations fall - updated to use Stadur instead of TestLocations
 export async function fetchAllTestLocations(): Promise<TestLocation[]> {
   const QUERY = `
     query AllTestLocations {
-      allTestLocations {
+      allStadur {
         id
         name
         description
@@ -215,15 +215,19 @@ export async function fetchAllTestLocations(): Promise<TestLocation[]> {
   `;
   try {
     const data = await request({ query: QUERY, variables: {} });
-    return data?.allTestLocations || [];
-  } catch (error) { return []; }
+    console.log('Test locations data received:', data);
+    return data?.allStadur || [];
+  } catch (error) { 
+    console.error('Error fetching test locations:', error);
+    return []; 
+  }
 }
 
-// F: fetchTestLocationById fall
+// F: fetchTestLocationById fall - updated to use stadur instead of test
 export async function fetchTestLocationById(id: string): Promise<TestLocation | null> {
   const QUERY = `
     query TestLocationById($id: ItemId) {
-      test(filter: {id: {eq: $id}}) {
+      stadur(filter: {id: {eq: $id}}) {
         id
         name
         description
@@ -237,7 +241,7 @@ export async function fetchTestLocationById(id: string): Promise<TestLocation | 
   `;
   try {
     const data = await request({ query: QUERY, variables: { id } });
-    if (!data?.test) { return null; }
-    return data.test;
+    if (!data?.stadur) { return null; }
+    return data.stadur;
   } catch (error) { return null; }
 }

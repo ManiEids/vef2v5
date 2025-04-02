@@ -1,4 +1,2 @@
 prisma/
-src/routes/
-
-# Fjarlægjum eða kommenta út  með src/lib til að leyfa henni að vera með
+# Make sure src/lib is NOT ignored
