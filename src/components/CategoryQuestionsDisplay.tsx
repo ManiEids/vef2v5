@@ -4,11 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import QuestionList from '@/components/QuestionList';
 import { getCategory, getQuestionsByCategory } from '@/services/clientApi';
-import { Category, Question } from '@/services/api-types';
+import { Category as ApiCategory, Question as ApiQuestion } from '@/services/api-types';
+import { Question as DatoCMSQuestion } from '@/lib/datocms';
 
 export function CategoryQuestionsDisplay({ slug }: { slug: string }) {
-  const [category, setCategory] = useState<Category | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [category, setCategory] = useState<ApiCategory | null>(null);
+  const [questions, setQuestions] = useState<DatoCMSQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,11 +25,14 @@ export function CategoryQuestionsDisplay({ slug }: { slug: string }) {
         ]);
         
         setCategory(categoryData);
-        // Transform questions to ensure each question has a "text" property (set to empty string if not present)
-        const transformedQuestions = questionsData.map((q) => ({
+        
+        // Transform questions to match DatoCMSQuestion type
+        const transformedQuestions = questionsData.map((q: ApiQuestion) => ({
           ...q,
-          text: (q as any).text || ''
-        }));
+          text: (q as any).text || '',
+          answers: q.answers || []
+        })) as DatoCMSQuestion[];
+        
         setQuestions(transformedQuestions);
       } catch (err) {
         setError('Failed to load category data. Please try again later.');
