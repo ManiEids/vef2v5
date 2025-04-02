@@ -1,0 +1,235 @@
+// Variables
+$foreground: #ffffff;
+$background-start: rgb(0, 0, 30);
+$background-end: rgb(10, 10, 60);
+$card-bg-color: rgba(20, 20, 40, 0.8);
+$card-border-color: rgba(150, 150, 255, 0.2);
+$accent-color: #6d45d0;
+$accent-color-hover: #7d55e0;
+$text-dark: #1a1a2e;
+
+// Base styles
+html, body {
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+body {
+  color: $foreground;
+  background: linear-gradient(
+      to bottom,
+      $background-start,
+      $background-end
+    );
+  min-height: 100vh;
+  position: relative;
+  z-index: 0;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+// Space theme
+.space-container {
+  overflow: visible; 
+  position: relative;
+}
+
+.star {
+  position: fixed;
+  background-color: white;
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0.8;
+  animation: twinkle 4s infinite;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.2; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.2; }
+}
+
+.space-card {
+  background: $card-bg-color;
+  border: 1px solid $card-border-color;
+  box-shadow: 0 4px 20px rgba(80, 100, 255, 0.2);
+  backdrop-filter: blur(5px);
+  color: $foreground;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.space-button {
+  background: linear-gradient(45deg, #4d21a6, $accent-color);
+  border: 1px solid rgba(150, 150, 255, 0.4);
+  box-shadow: 0 2px 10px rgba(100, 100, 255, 0.3);
+  transition: all 0.3s ease;
+  color: white;
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  
+  &:hover {
+    background: linear-gradient(45deg, #5d31b6, $accent-color-hover);
+    box-shadow: 0 4px 15px rgba(120, 120, 255, 0.5);
+  }
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(150, 150, 255, 0.8);
+}
+
+// Layout helpers
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+// Form elements
+input, textarea, select {
+  color: $text-dark;
+  background-color: white;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+button {
+  cursor: pointer;
+}
+
+// Grid and layout helpers
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+// Utility classes
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mb-8 { margin-bottom: 2rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.mt-8 { margin-top: 2rem; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.rounded { border-radius: 0.25rem; }
+.rounded-lg { border-radius: 0.5rem; }
+.text-center { text-align: center; }
+
+// Colors
+.bg-red-100 { background-color: #fee2e2; }
+.text-red-800 { color: #991b1b; }
+.bg-white { 
+  background-color: white;
+  color: $text-dark;
+}
+.text-white { color: white; }
+
+// Add these navigation styles
+.nav-buttons {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  
+  @media (min-width: 768px) {
+    justify-content: flex-end;
+    margin-bottom: 0;
+  }
+  
+  ul {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+// Add these styles at the bottom
+.space-card a {
+  color: $foreground;
+  text-decoration: none;
+  
+  &:hover h3 {
+    color: $accent-color-hover;
+  }
+}
+
+.space-card .space-card {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(100, 100, 255, 0.4);
+  }
+}
+
+.correct-answer {
+  color: #4ade80;
+  font-weight: bold;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.incorrect-answer {
+  color: #f87171;
+  font-weight: bold;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+// Add these styles for handling structured content images
+.structured-content {
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    box-shadow: 0 4px 20px rgba(80, 100, 255, 0.2);
+  }
+  
+  p {
+    margin-bottom: 1rem;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  a {
+    color: $accent-color;
+    text-decoration: underline;
+    
+    &:hover {
+      color: $accent-color-hover;
+    }
+  }
+}
+
+// Apply structured content styles to dangerously set HTML
+[data-datocms-html], 
+div[dangerouslySetInnerHTML] {
+  @extend .structured-content;
+}

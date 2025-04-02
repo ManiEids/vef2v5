@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import { useEffect } from 'react';
-import { Layout } from '@/components/Layout';
+import { useRouter } from 'next/navigation';
 
 export default function Error({
   error,
@@ -10,23 +10,35 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const router = useRouter();
+  
   useEffect(() => {
-    // Logga villu í konsólinn
-    console.error(error);
+    // Log the error to an error reporting service
+    console.error('Error occurred:', error);
   }, [error]);
 
+  const goHome = () => {
+    router.push('/');
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
+  };
+
   return (
-    <Layout>
-      <div className="text-center py-10">
-        <h1 className="text-3xl font-bold mb-4">Villa kom upp</h1>
-        <p className="text-xl mb-6">Því miður kom upp villa við að birta síðuna.</p>
+    <div className="space-card">
+      <h2 className="text-glow mb-4">Villa kom upp</h2>
+      <p className="mb-6">Því miður kom upp villa við að birta síðuna.</p>
+      <div className="flex space-x-4">
         <button
-          onClick={() => reset()}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={reset}
+          className="space-button"
         >
           Reyna aftur
         </button>
+        <button onClick={goHome} className="space-button">
+          Fara á forsíðu
+        </button>
       </div>
-    </Layout>
+    </div>
   );
 }

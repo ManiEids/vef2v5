@@ -1,7 +1,7 @@
-# Vefforritun 2 - Verkefni 4
-Vesen með að fá edit til að virka fyrir spurningar , reyna að laga 
-## Um
-React spurningaforrit með Next.js framenda á Vercel og Node.js bakenda með PostgreSQL.
+# Vefforritun 2 - Verkefni 5
+
+## Um verkefnið
+Next.js spurningaforrit með DatoCMS sem headless CMS kerfi.
 
 ## Uppsetning
 ```bash
@@ -14,8 +14,20 @@ npm run dev
 ```
 
 ## Stillingar
-Útbúðu `.env.local` skrá:
+Útbúðu `.env.local` skrá með viðeigandi breytum.
 
-hjálp frá github copilot með aðferðir leiðir til að fá hluti til að virka
+## CMS uppsetning
+Verkefnið notar DatoCMS með eftirfarandi líkön:
+- HomePage (single instance): title, subtitle, description, headerImage
+- Category (collection): title, slug, description
+- Question (collection): text, category, answers
+- Answer (collection): text, correct
 
-mikið byggt út frá hópaverkefni 1 sem ég gerði .
+## Virkni
+Notandi getur skoðað forsíðu, valið flokk, og svarað spurningum með strax niðurstöðum.
+
+## Tæknilegar upplýsingar
+- Next.js með TypeScript og App Router
+- SASS fyrir stílsetningu
+- DatoCMS sem headless CMS
+- Vercel fyrir hýsingu
