@@ -1,6 +1,4 @@
 prisma/
-src/lib/
 src/routes/
 
 # Fjarlægjum eða kommenta út vegalínu með src/lib til að leyfa henni að vera með
-# src/lib/
