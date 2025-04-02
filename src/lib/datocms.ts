@@ -93,10 +93,25 @@ export async function fetchCategoryBySlug(slug: string): Promise<{ category: Cat
     }
   `;
   try {
+    console.log(`Fetching category with slug: ${slug}`);
     const data = await request({ query: QUERY, variables: { slug } });
-    if (!data?.category) { throw new Error(`Category with slug '${slug}' not found`); }
+    console.log('Category data received:', data);
+    
+    if (!data?.category) { 
+      console.error(`No category found with slug: ${slug}`);
+      throw new Error(`Category with slug '${slug}' not found`); 
+    }
+    
+    // Check if questions exist
+    if (!data.category.questions || data.category.questions.length === 0) {
+      console.log(`Category found, but no questions for slug: ${slug}`);
+    }
+    
     return { category: data.category };
-  } catch (error) { throw error; }
+  } catch (error) { 
+    console.error(`Error fetching category by slug ${slug}:`, error);
+    throw error; 
+  }
 }
 
 // F: fetchQuestionsByCategoryId fall
@@ -204,7 +219,7 @@ export async function fetchQuestionsByCategory(categoryId: string): Promise<Ques
 export async function fetchAllTestLocations(): Promise<TestLocation[]> {
   const QUERY = `
     query AllTestLocations {
-      allStadur {
+      allStadurs {
         id
         name
         description
@@ -219,9 +234,16 @@ export async function fetchAllTestLocations(): Promise<TestLocation[]> {
   try {
     const data = await request({ query: QUERY, variables: {} });
     console.log('Test locations data received:', data);
-    return data?.allStadur || [];
+    // Check what fields are actually in the response
+    if (data && Object.keys(data).length > 0) {
+      const firstKey = Object.keys(data)[0];
+      console.log(`Data accessed via key: ${firstKey}`, data[firstKey]);
+      return data[firstKey] || [];
+    }
+    return data?.allStadurs || [];
   } catch (error) { 
     console.error('Error fetching test locations:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     return []; 
   }
 }

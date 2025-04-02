@@ -4,6 +4,14 @@ import { fetchHomePage, fetchAllCategories, fetchAllTestLocations, Category } fr
 
 export default async function HomePage() {
   try {
+    // Log the API token in development mode for debugging
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Using DatoCMS API token:', 
+        process.env.DATOCMS_API_TOKEN ? 
+        `${process.env.DATOCMS_API_TOKEN.substring(0, 5)}...` : 
+        'Missing token');
+    }
+
     const homeData = await fetchHomePage();
     const categories = await fetchAllCategories();
     const testLocations = await fetchAllTestLocations();
@@ -82,6 +90,11 @@ export default async function HomePage() {
             </div>
           </div>
         )}
+        <div className="mt-8">
+          <Link href="/test-locations" className="space-button">
+            View Test Locations
+          </Link>
+        </div>
       </div>
     );
   } catch (error) {
