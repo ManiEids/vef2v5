@@ -70,13 +70,11 @@ export function TestLocationsList() {
           <ol className="list-decimal pl-5 space-y-1">
             <li>Go to your DatoCMS admin panel (https://vef2-v5-1467.admin.datocms.com/)</li>
             <li>Click on "Content" in the top navigation menu</li>
-            <li>Select "LocationTest" from the list of models</li>
-            <li>Click the "+ New record" button</li>
-            <li>You'll see a field labeled "Stadur" (geolocation field)</li>
-            <li>Click on the map to set coordinates or enter them manually</li>
-            <li>Click "Save" and then "Publish" to make the location visible</li>
-            <li>Create multiple entries to see them all on your site</li>
+            <li>Select "LocationTest"</li>
+            <li>Create a record with the "Stadur" geolocation field</li>
+            <li>Click "Save" and then "Publish" to make it visible</li>
           </ol>
+          <p className="mt-2 text-sm">Note: According to the GraphQL schema, LocationTest appears to be a single record model, not a collection.</p>
         </div>
         <Link href="/" className="inline-block mt-4 space-button">
           Go back home

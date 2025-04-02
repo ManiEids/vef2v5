@@ -230,7 +230,7 @@ export async function fetchQuestionsByCategoryId(categoryId: string): Promise<Qu
 export async function fetchHomePage(): Promise<HomePage> {
   const QUERY = `
     query {
-      allHomePages {
+      homepage {
         title
         subtitle
         description
@@ -244,13 +244,14 @@ export async function fetchHomePage(): Promise<HomePage> {
     }
   `;
   try {
+    console.log('Fetching homepage data from DatoCMS');
     const data = await request({ query: QUERY, variables: {} });
-    console.log('Homepage data:', data);
+    console.log('Raw homepage data received:', JSON.stringify(data, null, 2));
     
-    if (data?.allHomePages && data.allHomePages.length > 0) {
+    if (data?.homepage) {
       return {
-        ...data.allHomePages[0],
-        headerImage: data.allHomePages[0].headerimage
+        ...data.homepage,
+        headerImage: data.homepage.headerimage
       };
     }
     
@@ -324,17 +325,10 @@ export async function fetchQuestionsByCategory(categoryId: string): Promise<Ques
 }
 
 export async function fetchAllTestLocations(): Promise<TestLocation[]> {
-  const queryOptions = [
-    'allLocationtest',
-    'allLocationTests',
-    'allLocationtests',
-    'allLocationTestRecords'
-  ];
-
-  for (const fieldName of queryOptions) {
-    const QUERY = `
+  try {
+    const LOCATION_QUERY = `
       query {
-        ${fieldName} {
+        locationtest {
           id
           _createdAt
           stadur {
@@ -345,104 +339,102 @@ export async function fetchAllTestLocations(): Promise<TestLocation[]> {
       }
     `;
     
-    try {
-      console.log(`Trying location query with field: ${fieldName}`);
-      const data = await request({ query: QUERY });
-      
-      if (data && data[fieldName]) {
-        console.log(`Success! Found location data using ${fieldName}`);
-        return data[fieldName].map((item: any) => ({
-          id: item.id,
-          name: `Location at ${item.stadur?.latitude?.toFixed(4) || 0}, ${item.stadur?.longitude?.toFixed(4) || 0}`,
-          description: `A location in Iceland`,
-          location: {
-            latitude: item.stadur?.latitude || 0,
-            longitude: item.stadur?.longitude || 0
-          },
-          createdAt: item._createdAt
-        }));
-      }
-    } catch (error) {
-      console.log(`Query with ${fieldName} failed:`, error);
-    }
-  }
-  
-  console.log('Attempting to find the correct model name with introspection...');
-  
-  try {
-    const SCHEMA_QUERY = `{
-      __schema {
-        queryType {
-          fields {
-            name
-            description
-          }
-        }
-      }
-    }`;
+    console.log('Fetching single locationtest record');
+    const locationData = await request({ query: LOCATION_QUERY });
     
-    const schema = await request({ query: SCHEMA_QUERY });
-    const queryFields = schema?.__schema?.queryType?.fields || [];
-    
-    console.log('Available query fields:', queryFields.map((f: any) => f.name));
-    
-    const locationFields = queryFields.filter((f: any) => 
-      f.name.toLowerCase().includes('location') || 
-      f.name.toLowerCase().includes('test')
-    );
-    
-    console.log('Potential location-related fields:', locationFields);
-    
-    if (locationFields.length > 0) {
-      const mostLikelyField = locationFields[0].name;
-      console.log(`Trying most likely field: ${mostLikelyField}`);
-      
-      const TEST_QUERY = `{
-        ${mostLikelyField} {
-          id
-          _createdAt
-        }
-      }`;
-      
-      const testData = await request({ query: TEST_QUERY });
-      console.log(`Data from ${mostLikelyField}:`, testData);
+    if (locationData?.locationtest) {
+      console.log('Found a locationtest record');
+      return [{
+        id: locationData.locationtest.id,
+        name: `Location at ${locationData.locationtest.stadur?.latitude?.toFixed(4) || 0}, ${locationData.locationtest.stadur?.longitude?.toFixed(4) || 0}`,
+        description: `A location from LocationTest model`,
+        location: {
+          latitude: locationData.locationtest.stadur?.latitude || 0,
+          longitude: locationData.locationtest.stadur?.longitude || 0
+        },
+        createdAt: locationData.locationtest._createdAt
+      }];
     }
   } catch (error) {
-    console.error('Schema introspection failed:', error);
+    console.log('Error fetching locationtest:', error);
   }
   
-  return [];
+  console.log('No location data found, returning dummy location');
+  return [{
+    id: 'demo-1',
+    name: 'Example Location',
+    description: 'This is a demo location. Please add real locations in DatoCMS by creating a "LocationTest" record.',
+    location: {
+      latitude: 52.520008,
+      longitude: 13.404954
+    },
+    createdAt: new Date().toISOString()
+  }];
 }
 
 export async function fetchTestLocationById(id: string): Promise<TestLocation | null> {
-  const QUERY = `
-    query LocationTestById($id: ItemId) {
-      locationtest(filter: {id: {eq: $id}}) {
-        id
-        _createdAt
-        stadur {
-          latitude
-          longitude
+  try {
+    const LOCATION_TEST_QUERY = `
+      query LocationTestById($id: ItemId) {
+        locationtest(filter: {id: {eq: $id}}) {
+          id
+          _createdAt
+          stadur {
+            latitude
+            longitude
+          }
         }
       }
-    }
-  `;
-  try {
-    const data = await request({ query: QUERY, variables: { id } });
-    if (!data?.locationtest) { return null; }
+    `;
     
-    return {
-      id: data.locationtest.id,
-      name: `Location at ${data.locationtest.stadur?.latitude.toFixed(4)}, ${data.locationtest.stadur?.longitude.toFixed(4)}`,
-      description: `A location in Iceland`,
-      location: {
-        latitude: data.locationtest.stadur?.latitude || 0,
-        longitude: data.locationtest.stadur?.longitude || 0
-      },
-      createdAt: data.locationtest._createdAt
-    };
-  } catch (error) { 
-    console.error('Error fetching test location by ID:', error);
-    return null; 
+    const testData = await request({ query: LOCATION_TEST_QUERY, variables: { id } });
+    if (testData?.locationtest && testData.locationtest.stadur) {
+      return {
+        id: testData.locationtest.id,
+        name: `Location at ${testData.locationtest.stadur?.latitude.toFixed(4)}, ${testData.locationtest.stadur?.longitude.toFixed(4)}`,
+        description: `A location from LocationTest model`,
+        location: {
+          latitude: testData.locationtest.stadur?.latitude || 0,
+          longitude: testData.locationtest.stadur?.longitude || 0
+        },
+        createdAt: testData.locationtest._createdAt
+      };
+    }
+  } catch (locationError) {
+    console.log('Not found in LocationTest model', locationError);
   }
+  
+  try {
+    const PROFA_QUERY = `
+      query ProfaById($id: ItemId) {
+        profa(filter: {id: {eq: $id}}) {
+          id
+          _createdAt
+          berlinberlin {
+            latitude
+            longitude
+          }
+        }
+      }
+    `;
+    
+    const profaData = await request({ query: PROFA_QUERY, variables: { id } });
+    if (profaData?.profa && profaData.profa.berlinberlin) {
+      return {
+        id: profaData.profa.id,
+        name: `Berlin Location at ${profaData.profa.berlinberlin?.latitude.toFixed(4)}, ${profaData.profa.berlinberlin?.longitude.toFixed(4)}`,
+        description: `A location from Profa model`,
+        location: {
+          latitude: profaData.profa.berlinberlin?.latitude || 0,
+          longitude: profaData.profa.berlinberlin?.longitude || 0
+        },
+        createdAt: profaData.profa._createdAt
+      };
+    }
+  } catch (profaError) {
+    console.log('Not found in Profa model', profaError);
+  }
+  
+  console.error(`No location found with id: ${id}`);
+  return null;
 }
