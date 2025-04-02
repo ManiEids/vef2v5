@@ -24,7 +24,12 @@ export function CategoryQuestionsDisplay({ slug }: { slug: string }) {
         ]);
         
         setCategory(categoryData);
-        setQuestions(questionsData);
+        // Transform questions to ensure each question has a "text" property (set to empty string if not present)
+        const transformedQuestions = questionsData.map((q) => ({
+          ...q,
+          text: (q as any).text || ''
+        }));
+        setQuestions(transformedQuestions);
       } catch (err) {
         setError('Failed to load category data. Please try again later.');
         console.error('Error loading category data:', err);
@@ -57,7 +62,7 @@ export function CategoryQuestionsDisplay({ slug }: { slug: string }) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{category.title}</h1> {/* titill frekar en nafn*/}
+        <h1 className="text-3xl font-bold mb-2">{category.title}</h1> {/* titill frekar en nafn */}
         <p className="text-gray-600">Answer the questions below:</p>
       </div>
       
