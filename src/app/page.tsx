@@ -32,9 +32,15 @@ export default async function HomePage() {
         <header className="text-center mb-8">
           <h1 className="text-glow mb-2">{homeData?.title || 'Verkefni 5 - Vefforritun 2'}</h1>
           <p className="mb-6">{homeData?.subtitle || 'Spurningaleikur með DatoCMS'}</p>
-          {homeData?.headerImage?.url ? (
+          {/* Check both headerImage and headerimage since DatoCMS fields may vary */}
+          {(homeData?.headerImage?.url || homeData?.headerimage?.url) ? (
             <div className="mb-6 flex flex-col items-center">
-              <img src={homeData.headerImage.url} alt={homeData.headerImage?.alt || 'Mynd'} className="rounded-lg shadow-lg max-w-full" style={{ maxHeight: '400px', objectFit: 'contain' }} />
+              <img 
+                src={homeData.headerImage?.url || homeData.headerimage?.url} 
+                alt={homeData.headerImage?.alt || homeData.headerimage?.alt || 'Mynd'} 
+                className="rounded-lg shadow-lg max-w-full" 
+                style={{ maxHeight: '400px', objectFit: 'contain' }} 
+              />
             </div>
           ) : (
             <div className="mb-6 flex flex-col items-center">

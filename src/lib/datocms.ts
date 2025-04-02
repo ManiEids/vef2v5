@@ -182,7 +182,7 @@ export async function fetchHomePage(): Promise<HomePage> {
         title
         subtitle
         description
-        headerImage {
+        headerimage {
           url
           alt
           width
@@ -193,11 +193,16 @@ export async function fetchHomePage(): Promise<HomePage> {
   `;
   try {
     const data = await request({ query: QUERY, variables: {} });
+    console.log('Homepage data:', data);
     if (data?.allHomePages && data.allHomePages.length > 0) {
-      return data.allHomePages[0];
+      return {
+        ...data.allHomePages[0],
+        headerImage: data.allHomePages[0].headerimage
+      };
     }
     return { title: 'Quiz App - Mani Eiðsson', subtitle: 'Spurningar - Eitthvað random smíða á DatoCMS', description: 'veldu flokk til að byrja' };
   } catch (error) {
+    console.error('Error fetching homepage:', error);
     return { title: 'Quiz App - Mani Eiðsson', subtitle: 'Spurningar - Eitthvað random smíða á DatoCMS', description: 'veldu flokk til að byrja' };
   }
 }
@@ -253,64 +258,94 @@ export async function fetchQuestionsByCategory(categoryId: string): Promise<Ques
 }
 
 export async function fetchAllTestLocations(): Promise<TestLocation[]> {
-  const QUERY = `
-    query AllLocationTests {
-      allLocationtests {
-        id
-        _createdAt
-        stadur {
-          latitude
-          longitude
-        }
-      }
-    }
-  `;
-  
-  try {
-    console.log('Fetching all test locations with correct structure');
-    const data = await request({ query: QUERY });
-    console.log('Location data received:', data);
-    
-    if (data?.allLocationtests) {
-      return data.allLocationtests.map((item: any) => ({
-        id: item.id,
-        name: `Location at ${item.stadur?.latitude.toFixed(4)}, ${item.stadur?.longitude.toFixed(4)}`,
-        description: `A location in Iceland`,
-        location: {
-          latitude: item.stadur?.latitude || 0,
-          longitude: item.stadur?.longitude || 0
-        },
-        createdAt: item._createdAt
-      }));
-    }
-    return [];
-  } catch (error) {
-    console.error('Error fetching test locations:', error);
-    
-    try {
-      const INTROSPECTION_QUERY = `
-        query {
-          __type(name: "LocationtestRecord") {
-            name
-            fields {
-              name
-              type {
-                name
-                kind
-              }
-            }
+  const queryOptions = [
+    'allLocationtest',
+    'allLocationTests',
+    'allLocationtests',
+    'allLocationTestRecords'
+  ];
+
+  for (const fieldName of queryOptions) {
+    const QUERY = `
+      query {
+        ${fieldName} {
+          id
+          _createdAt
+          stadur {
+            latitude
+            longitude
           }
         }
-      `;
-      
-      const schemaData = await request({ query: INTROSPECTION_QUERY });
-      console.log('LocationTest model schema:', schemaData);
-    } catch (schemaError) {
-      console.error('Error fetching schema:', schemaError);
-    }
+      }
+    `;
     
-    return [];
+    try {
+      console.log(`Trying location query with field: ${fieldName}`);
+      const data = await request({ query: QUERY });
+      
+      if (data && data[fieldName]) {
+        console.log(`Success! Found location data using ${fieldName}`);
+        return data[fieldName].map((item: any) => ({
+          id: item.id,
+          name: `Location at ${item.stadur?.latitude?.toFixed(4) || 0}, ${item.stadur?.longitude?.toFixed(4) || 0}`,
+          description: `A location in Iceland`,
+          location: {
+            latitude: item.stadur?.latitude || 0,
+            longitude: item.stadur?.longitude || 0
+          },
+          createdAt: item._createdAt
+        }));
+      }
+    } catch (error) {
+      console.log(`Query with ${fieldName} failed:`, error);
+    }
   }
+  
+  console.log('Attempting to find the correct model name with introspection...');
+  
+  try {
+    const SCHEMA_QUERY = `{
+      __schema {
+        queryType {
+          fields {
+            name
+            description
+          }
+        }
+      }
+    }`;
+    
+    const schema = await request({ query: SCHEMA_QUERY });
+    const queryFields = schema?.__schema?.queryType?.fields || [];
+    
+    console.log('Available query fields:', queryFields.map((f: any) => f.name));
+    
+    const locationFields = queryFields.filter((f: any) => 
+      f.name.toLowerCase().includes('location') || 
+      f.name.toLowerCase().includes('test')
+    );
+    
+    console.log('Potential location-related fields:', locationFields);
+    
+    if (locationFields.length > 0) {
+      const mostLikelyField = locationFields[0].name;
+      console.log(`Trying most likely field: ${mostLikelyField}`);
+      
+      const TEST_QUERY = `{
+        ${mostLikelyField} {
+          id
+          _createdAt
+        }
+      }`;
+      
+      const testData = await request({ query: TEST_QUERY });
+      console.log(`Data from ${mostLikelyField}:`, testData);
+    }
+  } catch (error) {
+    console.error('Schema introspection failed:', error);
+  }
+  
+  return [];
 }
 
 export async function fetchTestLocationById(id: string): Promise<TestLocation | null> {
