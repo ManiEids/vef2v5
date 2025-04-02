@@ -71,8 +71,8 @@ export async function fetchAllCategories(): Promise<Category[]> {
   } catch (error) { return []; }
 }
 
-// F: fetchCategoryBySlug fall
-export async function fetchCategoryBySlug(slug: string): Promise<{ category: Category & { questions: Question[] } }> {
+// F: fetchCategoryBySlug fall - REMOVE questions field which doesn't exist
+export async function fetchCategoryBySlug(slug: string): Promise<{ category: Category }> {
   const QUERY = `
     query CategoryBySlug($slug: String!) {
       category(filter: { slug: { eq: $slug } }) {
@@ -80,15 +80,6 @@ export async function fetchCategoryBySlug(slug: string): Promise<{ category: Cat
         title
         slug
         description
-        questions {
-          id
-          text
-          answers {
-            id
-            text
-            iscorrect
-          }
-        }
       }
     }
   `;
@@ -102,15 +93,45 @@ export async function fetchCategoryBySlug(slug: string): Promise<{ category: Cat
       throw new Error(`Category with slug '${slug}' not found`); 
     }
     
-    // Check if questions exist
-    if (!data.category.questions || data.category.questions.length === 0) {
-      console.log(`Category found, but no questions for slug: ${slug}`);
-    }
-    
     return { category: data.category };
   } catch (error) { 
     console.error(`Error fetching category by slug ${slug}:`, error);
     throw error; 
+  }
+}
+
+// ADD a dedicated function to get questions for a category by slug
+export async function fetchQuestionsByCategorySlug(categorySlug: string): Promise<Question[]> {
+  // First get the category to get its ID
+  const categoryData = await fetchCategoryBySlug(categorySlug);
+  
+  if (!categoryData.category) {
+    return [];
+  }
+  
+  // Use the category ID to fetch questions
+  const QUERY = `
+    query QuestionsByCategory($categoryId: ItemId) {
+      allQuestions(filter: {category: {eq: ${categoryData.category.id}}}) {
+        id
+        text
+        answers {
+          id
+          text
+          iscorrect
+        }
+      }
+    }
+  `;
+  
+  try {
+    console.log(`Fetching questions for category ID: ${categoryData.category.id}`);
+    const data = await request({ query: QUERY });
+    console.log('Questions data received:', data);
+    return data?.allQuestions || [];
+  } catch (error) {
+    console.error('Error fetching questions for category:', error);
+    return []; 
   }
 }
 
