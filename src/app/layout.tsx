@@ -4,7 +4,7 @@ import { StarsBackground } from '@/components/StarsBackground';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Verkefni 5 - Vefforritun 2 - Headless CMS Quiz',
+  title: 'Verkefni 5 - Vefforritun 2 2025 - ManiEiðsson- Headless CMS Quiz',
   description: 'Quiz application using Next.js and DatoCMS',
 };
 

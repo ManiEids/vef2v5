@@ -63,6 +63,28 @@ export interface TestLocation {
   createdAt: string; 
 }
 
+export interface Screenshot {
+  id: string;
+  myndir: FileField[];  // The asset gallery field
+  _createdAt: string;
+}
+
+export interface FileField {
+  id: string;
+  url: string;
+  alt?: string;
+  title?: string;
+  width?: number;
+  height?: number;
+  responsiveImage?: {
+    src: string;
+    width: number;
+    height: number;
+    alt?: string;
+    base64?: string;
+  };
+}
+
 interface RequestParams { 
   query: string; 
   variables?: Record<string, any>; 
@@ -327,9 +349,9 @@ export async function fetchQuestionsByCategory(categoryId: string): Promise<Ques
 export async function fetchAllTestLocations(): Promise<TestLocation[]> {
   const results: TestLocation[] = [];
   
-  // Try to fetch the locationtest record with stadur field
+  // Try to fetch both location fields in a single query
   try {
-    const LOCATION_QUERY = `
+    const COMBINED_QUERY = `
       query {
         locationtest {
           id
@@ -338,37 +360,6 @@ export async function fetchAllTestLocations(): Promise<TestLocation[]> {
             latitude
             longitude
           }
-        }
-      }
-    `;
-    
-    console.log('Fetching locationtest with stadur field');
-    const locationData = await request({ query: LOCATION_QUERY });
-    
-    if (locationData?.locationtest && locationData.locationtest.stadur) {
-      console.log('Found locationtest with stadur field');
-      results.push({
-        id: locationData.locationtest.id,
-        name: `Location at ${locationData.locationtest.stadur?.latitude?.toFixed(4) || 0}, ${locationData.locationtest.stadur?.longitude?.toFixed(4) || 0}`,
-        description: `Staðsetning--> datocms Geolocation model (stadur field)`,
-        location: {
-          latitude: locationData.locationtest.stadur?.latitude || 0,
-          longitude: locationData.locationtest.stadur?.longitude || 0
-        },
-        createdAt: locationData.locationtest._createdAt
-      });
-    }
-  } catch (error) {
-    console.log('Error fetching locationtest with stadur:', error);
-  }
-  
-  // Try to fetch the locationtest record with berlin field (newly discovered field)
-  try {
-    const BERLIN_QUERY = `
-      query {
-        locationtest {
-          id
-          _createdAt
           berlin {
             latitude
             longitude
@@ -377,38 +368,61 @@ export async function fetchAllTestLocations(): Promise<TestLocation[]> {
       }
     `;
     
-    console.log('Fetching locationtest with berlin field');
-    const berlinData = await request({ query: BERLIN_QUERY });
+    console.log('Sæki staðsetningar frá DatoCMS...');
+    const data = await request({ query: COMBINED_QUERY });
     
-    if (berlinData?.locationtest && berlinData.locationtest.berlin) {
-      console.log('Found locationtest with berlin field');
-      results.push({
-        id: `${berlinData.locationtest.id}-berlin`,
-        name: `Berlin Location at ${berlinData.locationtest.berlin?.latitude?.toFixed(4) || 0}, ${berlinData.locationtest.berlin?.longitude?.toFixed(4) || 0}`,
-        description: `Staðsetning--> datocms Geolocation model (berlin field)`,
-        location: {
-          latitude: berlinData.locationtest.berlin?.latitude || 0,
-          longitude: berlinData.locationtest.berlin?.longitude || 0
-        },
-        createdAt: berlinData.locationtest._createdAt
-      });
+    if (data?.locationtest) {
+      // Add stadur location if it exists
+      if (data.locationtest.stadur && 
+          data.locationtest.stadur.latitude && 
+          data.locationtest.stadur.longitude) {
+        console.log('Fann staðsetningu á Íslandi:', data.locationtest.stadur);
+        results.push({
+          id: data.locationtest.id,
+          name: `Ísland: ${data.locationtest.stadur.latitude.toFixed(4)}, ${data.locationtest.stadur.longitude.toFixed(4)}`,
+          description: `Staðsetning--> DatoCMS staðsetningarmódel (stadur reitur)`,
+          location: {
+            latitude: data.locationtest.stadur.latitude,
+            longitude: data.locationtest.stadur.longitude
+          },
+          createdAt: data.locationtest._createdAt
+        });
+      }
+      
+      // Add berlin location if it exists
+      if (data.locationtest.berlin && 
+          data.locationtest.berlin.latitude && 
+          data.locationtest.berlin.longitude) {
+        console.log('Fann staðsetningu í Berlín:', data.locationtest.berlin);
+        results.push({
+          id: `${data.locationtest.id}-berlin`,
+          name: `Berlín: ${data.locationtest.berlin.latitude.toFixed(4)}, ${data.locationtest.berlin.longitude.toFixed(4)}`,
+          description: `Staðsetning--> DatoCMS staðsetningarmódel (berlín reitur)`,
+          location: {
+            latitude: data.locationtest.berlin.latitude,
+            longitude: data.locationtest.berlin.longitude
+          },
+          createdAt: data.locationtest._createdAt
+        });
+      }
     }
+    
+    console.log(`Fann ${results.length} staðsetningar alls`);
   } catch (error) {
-    console.log('Error fetching locationtest with berlin field:', error);
+    console.error('Villa við að sækja staðsetningar:', error);
   }
   
   // If we found any locations, return them
   if (results.length > 0) {
-    console.log(`Found ${results.length} locations in total`);
     return results;
   }
   
   // If all attempts failed, create a dummy location as fallback
-  console.log('No location data found, returning dummy location');
+  console.log('Engar staðsetningar fundust, skila sýnidæmi');
   return [{
     id: 'demo-1',
-    name: 'Example Location (Berlin)',
-    description: 'This is a demo location. Please add real locations in DatoCMS by creating a "LocationTest" record with "stadur" or "berlin" field.',
+    name: 'Sýnidæmi (Berlín)',
+    description: 'Þetta er sýnidæmi. Vinsamlegast bættu við raunverulegum staðsetningum í DatoCMS með því að búa til "LocationTest" færslu með "stadur" eða "berlin" reit.',
     location: {
       latitude: 52.520008,
       longitude: 13.404954
@@ -418,6 +432,10 @@ export async function fetchAllTestLocations(): Promise<TestLocation[]> {
 }
 
 export async function fetchTestLocationById(id: string): Promise<TestLocation | null> {
+  // Check if this is a normal ID or a composite ID with "-berlin" suffix
+  const isBerlinLocation = id.endsWith('-berlin');
+  const baseId = isBerlinLocation ? id.replace('-berlin', '') : id;
+  
   try {
     const LOCATION_TEST_QUERY = `
       query LocationTestById($id: ItemId) {
@@ -428,34 +446,7 @@ export async function fetchTestLocationById(id: string): Promise<TestLocation | 
             latitude
             longitude
           }
-        }
-      }
-    `;
-    
-    const testData = await request({ query: LOCATION_TEST_QUERY, variables: { id } });
-    if (testData?.locationtest && testData.locationtest.stadur) {
-      return {
-        id: testData.locationtest.id,
-        name: `Location at ${testData.locationtest.stadur?.latitude.toFixed(4)}, ${testData.locationtest.stadur?.longitude.toFixed(4)}`,
-        description: `Staðsetning--> datocms Geolocation model`,
-        location: {
-          latitude: testData.locationtest.stadur?.latitude || 0,
-          longitude: testData.locationtest.stadur?.longitude || 0
-        },
-        createdAt: testData.locationtest._createdAt
-      };
-    }
-  } catch (locationError) {
-    console.log('Not found in LocationTest model', locationError);
-  }
-  
-  try {
-    const PROFA_QUERY = `
-      query ProfaById($id: ItemId) {
-        profa(filter: {id: {eq: $id}}) {
-          id
-          _createdAt
-          berlinberlin {
+          berlin {
             latitude
             longitude
           }
@@ -463,23 +454,75 @@ export async function fetchTestLocationById(id: string): Promise<TestLocation | 
       }
     `;
     
-    const profaData = await request({ query: PROFA_QUERY, variables: { id } });
-    if (profaData?.profa && profaData.profa.berlinberlin) {
-      return {
-        id: profaData.profa.id,
-        name: `Berlin Location at ${profaData.profa.berlinberlin?.latitude.toFixed(4)}, ${profaData.profa.berlinberlin?.longitude.toFixed(4)}`,
-        description: `A location from Profa model`,
-        location: {
-          latitude: profaData.profa.berlinberlin?.latitude || 0,
-          longitude: profaData.profa.berlinberlin?.longitude || 0
-        },
-        createdAt: profaData.profa._createdAt
-      };
+    const testData = await request({ query: LOCATION_TEST_QUERY, variables: { id: baseId } });
+    
+    if (testData?.locationtest) {
+      // If it's a berlin location, return that
+      if (isBerlinLocation && testData.locationtest.berlin) {
+        return {
+          id: `${testData.locationtest.id}-berlin`,
+          name: `Berlín: ${testData.locationtest.berlin.latitude.toFixed(4)}, ${testData.locationtest.berlin.longitude.toFixed(4)}`,
+          description: `Staðsetning--> DatoCMS staðsetningarmódel (berlín reitur)`,
+          location: {
+            latitude: testData.locationtest.berlin.latitude || 0,
+            longitude: testData.locationtest.berlin.longitude || 0
+          },
+          createdAt: testData.locationtest._createdAt
+        };
+      } 
+      // Otherwise return the stadur location
+      else if (testData.locationtest.stadur) {
+        return {
+          id: testData.locationtest.id,
+          name: `Ísland: ${testData.locationtest.stadur.latitude.toFixed(4)}, ${testData.locationtest.stadur.longitude.toFixed(4)}`,
+          description: `Staðsetning--> DatoCMS staðsetningarmódel (stadur reitur)`,
+          location: {
+            latitude: testData.locationtest.stadur.latitude || 0,
+            longitude: testData.locationtest.stadur.longitude || 0
+          },
+          createdAt: testData.locationtest._createdAt
+        };
+      }
     }
-  } catch (profaError) {
-    console.log('Not found in Profa model', profaError);
+  } catch (error) {
+    console.error('Villa við að sækja staðsetningu með ID:', error);
   }
   
-  console.error(`No location found with id: ${id}`);
+  console.error(`Engin staðsetning fannst með ID: ${id}`);
   return null;
+}
+
+export async function fetchAllScreenshots(): Promise<Screenshot[]> {
+  const QUERY = `
+    query {
+      allScreenshots {
+        id
+        _createdAt
+        myndir {
+          id
+          url
+          alt
+          title
+          width
+          height
+          responsiveImage(imgixParams: { fit: crop, w: 800, h: 600, auto: format }) {
+            src
+            width
+            height
+            alt
+            base64
+          }
+        }
+      }
+    }
+  `;
+  try {
+    console.log('Fetching screenshots from DatoCMS');
+    const data = await request({ query: QUERY });
+    console.log(`Fetched ${data?.allScreenshots?.length || 0} screenshots`);
+    return data?.allScreenshots || [];
+  } catch (error) {
+    console.error('Error fetching screenshots:', error);
+    return [];
+  }
 }

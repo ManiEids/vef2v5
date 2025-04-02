@@ -16,13 +16,26 @@ export function TestLocationsList() {
       setLoading(true);
       setError(null);
       try {
-        console.log('Fetching test locations from DatoCMS');
+        console.log('Sæki staðsetningar frá DatoCMS...');
         const data = await getTestLocations();
-        console.log('Test locations fetched:', data);
+        console.log('Staðsetningar sóttar:', data);
+        if (data.length === 0) {
+          console.warn('Engar staðsetningar fundust');
+        } else {
+          console.log(
+            `Sótti ${data.length} staðsetningar:`,
+            data.map(
+              (loc) =>
+                `${loc.name} (${loc.location.latitude}, ${loc.location.longitude})`
+            )
+          );
+        }
         setLocations(data);
       } catch (err) {
-        console.error('Failed to fetch test locations:', err);
-        setError('Failed to load test locations. Please check DatoCMS configuration.');
+        console.error('Villa við að sækja staðsetningar:', err);
+        setError(
+          'Villa kom upp við að sækja staðsetningar. Athugaðu DatoCMS stillingar.'
+        );
       } finally {
         setLoading(false);
       }
@@ -47,14 +60,16 @@ export function TestLocationsList() {
       <div>
         <ErrorMessage message={error} />
         <div className="mt-4">
-          <h3 className="text-lg font-semibold mb-2">Troubleshooting:</h3>
+          <h3 className="text-lg font-semibold mb-2">Lausn vandamáls:</h3>
           <ol className="list-decimal pl-5 space-y-2">
-            <li>Check that the "Stadur" model exists in your DatoCMS</li>
-            <li>Make sure it has the required fields: name, description, location (geolocation)</li>
-            <li>Verify your API token has read permissions</li>
+            <li>Athugaðu að "Stadur" módelið sé til í DatoCMS</li>
+            <li>
+              Gakktu úr skugga um að það séu til nauðsynlegir reitir: nafn, lýsing, staðsetning (hnit)
+            </li>
+            <li>Staðfestu að API-lykillin þinn hafi lesréttindi</li>
           </ol>
           <Link href="/" className="inline-block mt-4 space-button">
-            Go back home
+            Fara aftur á forsíðu
           </Link>
         </div>
       </div>
@@ -63,26 +78,31 @@ export function TestLocationsList() {
 
   if (!locations || locations.length === 0) {
     return (
-      <div className="space-card p-6">
-        <p className="mb-4">No test locations found. Please add locations in DatoCMS.</p>
+      <div>
+        <p className="mt-2 text-sm">
+          Athugið: Samkvæmt GraphQL-skema, þá er LocationTest einstök færsla með mörgum staðsetningarreitum.
+        </p>
         <div className="bg-blue-100 text-blue-800 p-4 rounded mt-4">
-          <h3 className="font-bold mb-2">How to add test locations:</h3>
+          <h3 className="font-bold mb-2">Hvernig á að bæta við staðsetningum:</h3>
           <ol className="list-decimal pl-5 space-y-1">
-            <li>Go to your DatoCMS admin panel (https://vef2-v5-1467.admin.datocms.com/)</li>
-            <li>Click on "Content" in the top navigation menu</li>
-            <li>Select "LocationTest"</li>
-            <li>Create a record with either:
+            <li>
+              Farðu á DatoCMS stjórnborðið
+              (https://vef2-v5-1467.admin.datocms.com/)
+            </li>
+            <li>Smelltu á "Content" í efsta valmynd</li>
+            <li>Veldu "LocationTest"</li>
+            <li>
+              Búðu til færslu með annaðhvort:
               <ul className="ml-6 list-disc">
-                <li>The "Stadur" geolocation field, or</li>
-                <li>The "Berlin" geolocation field</li>
+                <li>"Stadur" staðsetningarreit, eða</li>
+                <li>"Berlin" staðsetningarreit</li>
               </ul>
             </li>
-            <li>Click "Save" and then "Publish" to make it visible</li>
+            <li>Smelltu á "Vista" og svo "Útgefa" til að gera það sýnilegt</li>
           </ol>
-          <p className="mt-2 text-sm">Note: According to the GraphQL schema, LocationTest appears to be a single record model with multiple geolocation fields.</p>
         </div>
         <Link href="/" className="inline-block mt-4 space-button">
-          Go back home
+          Fara aftur á forsíðu
         </Link>
       </div>
     );
@@ -90,30 +110,34 @@ export function TestLocationsList() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Test Locations</h2>
+      <h2 className="text-2xl font-bold">Staðsetningar</h2>
+      {locations.length > 0 && (
+        <div className="text-xs text-gray-400 mb-4">
+          Sýni {locations.length} staðsetningu(ar)
+        </div>
+      )}
       <ul className="space-y-4">
         {locations.map((location) => (
           <li key={location.id} className="space-card p-4">
             <h3 className="text-xl font-semibold mb-2">{location.name}</h3>
             {location.description && <p className="mb-2">{location.description}</p>}
             <div className="text-sm text-gray-400">
-              <p>Coordinates: {location.location.latitude}, {location.location.longitude}</p>
-              <p className="mt-1">Created: {new Date(location.createdAt).toLocaleDateString()}</p>
+              <p>Hnit: {location.location.latitude}, {location.location.longitude}</p>
+              <p className="mt-1">Búið til: {new Date(location.createdAt).toLocaleDateString('is-IS')}</p>
             </div>
-            
             <a 
               href={`https://www.google.com/maps?q=${location.location.latitude},${location.location.longitude}`}
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-block mt-3 text-blue-500 hover:underline"
             >
-              View on Google Maps
+              Skoða á Google Maps
             </a>
           </li>
         ))}
       </ul>
       <Link href="/" className="inline-block mt-4 space-button">
-        Go back home
+        Fara aftur á forsíðu
       </Link>
     </div>
   );

@@ -5,7 +5,8 @@ import {
   fetchCategoryBySlug, 
   fetchQuestionsByCategory,
   fetchAllTestLocations,
-  fetchTestLocationById
+  fetchTestLocationById,
+  fetchAllScreenshots
 } from '@/lib/datocms';
 
 // Re-export with simpler names
@@ -14,3 +15,4 @@ export const getCategory = fetchCategoryBySlug;
 export const getQuestionsByCategory = fetchQuestionsByCategory;
 export const getTestLocations = fetchAllTestLocations;
 export const getTestLocationById = fetchTestLocationById;
+export const getScreenshots = fetchAllScreenshots;

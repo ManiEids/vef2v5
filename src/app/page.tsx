@@ -97,8 +97,11 @@ export default async function HomePage() {
           </div>
         )}
         <div className="mt-8">
-          <Link href="/test-locations" className="space-button">
-            View Test Locations
+          <Link href="/test-locations" className="space-button mr-4">
+            Skoða staðsetningar
+          </Link>
+          <Link href="/screenshots" className="space-button">
+            Skoða skjámyndir
           </Link>
         </div>
       </div>
