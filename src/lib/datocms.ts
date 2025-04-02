@@ -38,10 +38,8 @@ interface RequestParams {
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-// Use provided token if environment variable is not set
 const DATOCMS_API_TOKEN = process.env.DATOCMS_API_TOKEN || 'e8582f6e14ff731e41a93b6457f001';
 
-// F: request fall
 export function request({ query, variables = {}, includeDrafts = false, excludeInvalid = false }: RequestParams): Promise<any> {
   const headers: Record<string, string> = { authorization: `Bearer ${DATOCMS_API_TOKEN}` };
   if (includeDrafts) { headers['X-Include-Drafts'] = 'true'; }
@@ -53,7 +51,6 @@ export function request({ query, variables = {}, includeDrafts = false, excludeI
   });
 }
 
-// F: fetchAllCategories fall
 export async function fetchAllCategories(): Promise<Category[]> {
   const QUERY = `
     query AllCategories {
@@ -71,7 +68,6 @@ export async function fetchAllCategories(): Promise<Category[]> {
   } catch (error) { return []; }
 }
 
-// F: fetchCategoryBySlug fall - REMOVE questions field which doesn't exist
 export async function fetchCategoryBySlug(slug: string): Promise<{ category: Category }> {
   const QUERY = `
     query CategoryBySlug($slug: String!) {
@@ -87,12 +83,10 @@ export async function fetchCategoryBySlug(slug: string): Promise<{ category: Cat
     console.log(`Fetching category with slug: ${slug}`);
     const data = await request({ query: QUERY, variables: { slug } });
     console.log('Category data received:', data);
-    
     if (!data?.category) { 
       console.error(`No category found with slug: ${slug}`);
       throw new Error(`Category with slug '${slug}' not found`); 
     }
-    
     return { category: data.category };
   } catch (error) { 
     console.error(`Error fetching category by slug ${slug}:`, error);
@@ -100,19 +94,14 @@ export async function fetchCategoryBySlug(slug: string): Promise<{ category: Cat
   }
 }
 
-// ADD a dedicated function to get questions for a category by slug
 export async function fetchQuestionsByCategorySlug(categorySlug: string): Promise<Question[]> {
-  // First get the category to get its ID
   const categoryData = await fetchCategoryBySlug(categorySlug);
-  
   if (!categoryData.category) {
     return [];
   }
-  
-  // Use the category ID to fetch questions
   const QUERY = `
     query QuestionsByCategory($categoryId: ItemId) {
-      allQuestions(filter: {category: {eq: ${categoryData.category.id}}}) {
+      allQuestions(filter: {category: {eq: $categoryId}}) {
         id
         text
         answers {
@@ -123,19 +112,49 @@ export async function fetchQuestionsByCategorySlug(categorySlug: string): Promis
       }
     }
   `;
-  
   try {
     console.log(`Fetching questions for category ID: ${categoryData.category.id}`);
-    const data = await request({ query: QUERY });
+    const data = await request({ 
+      query: QUERY, 
+      variables: { categoryId: categoryData.category.id }
+    });
     console.log('Questions data received:', data);
+    if (!data?.allQuestions || data.allQuestions.length === 0) {
+      console.log('No questions found for this category. Trying alternative query...');
+      const ALL_QUESTIONS = `
+        query {
+          allQuestions {
+            id
+            text
+            category {
+              id
+            }
+            answers {
+              id
+              text
+              iscorrect
+            }
+          }
+        }
+      `;
+      const allData = await request({ query: ALL_QUESTIONS });
+      console.log('All questions data:', allData);
+      if (allData?.allQuestions) {
+        const filteredQuestions = allData.allQuestions.filter(
+          (q: Question) => q.category && q.category.id === categoryData.category.id
+        );
+        console.log(`Found ${filteredQuestions.length} questions by manual filtering`);
+        return filteredQuestions;
+      }
+    }
     return data?.allQuestions || [];
   } catch (error) {
     console.error('Error fetching questions for category:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     return []; 
   }
 }
 
-// F: fetchQuestionsByCategoryId fall
 export async function fetchQuestionsByCategoryId(categoryId: string): Promise<Question[]> {
   const QUERY = `
     query QuestionsByCategoryId($categoryId: ItemId) {
@@ -156,7 +175,6 @@ export async function fetchQuestionsByCategoryId(categoryId: string): Promise<Qu
   } catch (error) { return []; }
 }
 
-// F: fetchHomePage fall
 export async function fetchHomePage(): Promise<HomePage> {
   const QUERY = `
     query {
@@ -184,7 +202,6 @@ export async function fetchHomePage(): Promise<HomePage> {
   }
 }
 
-// F: fetchAllQuestions fall
 export async function fetchAllQuestions(): Promise<Question[]> {
   const QUERY = `
     query AllQuestions {
@@ -210,7 +227,6 @@ export async function fetchAllQuestions(): Promise<Question[]> {
   } catch (error) { return []; }
 }
 
-// F: fetchQuestionsByCategory fall
 export async function fetchQuestionsByCategory(categoryId: string): Promise<Question[]> {
   const QUERY = `
     query QuestionsByCategory($categoryId: ItemId) {
@@ -236,58 +252,96 @@ export async function fetchQuestionsByCategory(categoryId: string): Promise<Ques
   } catch (error) { return []; }
 }
 
-// F: fetchAllTestLocations fall - updated to use Stadur instead of TestLocations
 export async function fetchAllTestLocations(): Promise<TestLocation[]> {
   const QUERY = `
-    query AllTestLocations {
-      allStadurs {
+    query AllLocationTests {
+      allLocationtests {
         id
-        name
-        description
-        location {
+        _createdAt
+        stadur {
           latitude
           longitude
         }
-        createdAt
       }
     }
   `;
+  
   try {
-    const data = await request({ query: QUERY, variables: {} });
-    console.log('Test locations data received:', data);
-    // Check what fields are actually in the response
-    if (data && Object.keys(data).length > 0) {
-      const firstKey = Object.keys(data)[0];
-      console.log(`Data accessed via key: ${firstKey}`, data[firstKey]);
-      return data[firstKey] || [];
+    console.log('Fetching all test locations with correct structure');
+    const data = await request({ query: QUERY });
+    console.log('Location data received:', data);
+    
+    if (data?.allLocationtests) {
+      return data.allLocationtests.map((item: any) => ({
+        id: item.id,
+        name: `Location at ${item.stadur?.latitude.toFixed(4)}, ${item.stadur?.longitude.toFixed(4)}`,
+        description: `A location in Iceland`,
+        location: {
+          latitude: item.stadur?.latitude || 0,
+          longitude: item.stadur?.longitude || 0
+        },
+        createdAt: item._createdAt
+      }));
     }
-    return data?.allStadurs || [];
-  } catch (error) { 
+    return [];
+  } catch (error) {
     console.error('Error fetching test locations:', error);
-    console.error('Error details:', JSON.stringify(error, null, 2));
-    return []; 
+    
+    try {
+      const INTROSPECTION_QUERY = `
+        query {
+          __type(name: "LocationtestRecord") {
+            name
+            fields {
+              name
+              type {
+                name
+                kind
+              }
+            }
+          }
+        }
+      `;
+      
+      const schemaData = await request({ query: INTROSPECTION_QUERY });
+      console.log('LocationTest model schema:', schemaData);
+    } catch (schemaError) {
+      console.error('Error fetching schema:', schemaError);
+    }
+    
+    return [];
   }
 }
 
-// F: fetchTestLocationById fall - updated to use stadur instead of test
 export async function fetchTestLocationById(id: string): Promise<TestLocation | null> {
   const QUERY = `
-    query TestLocationById($id: ItemId) {
-      stadur(filter: {id: {eq: $id}}) {
+    query LocationTestById($id: ItemId) {
+      locationtest(filter: {id: {eq: $id}}) {
         id
-        name
-        description
-        location {
+        _createdAt
+        stadur {
           latitude
           longitude
         }
-        createdAt
       }
     }
   `;
   try {
     const data = await request({ query: QUERY, variables: { id } });
-    if (!data?.stadur) { return null; }
-    return data.stadur;
-  } catch (error) { return null; }
+    if (!data?.locationtest) { return null; }
+    
+    return {
+      id: data.locationtest.id,
+      name: `Location at ${data.locationtest.stadur?.latitude.toFixed(4)}, ${data.locationtest.stadur?.longitude.toFixed(4)}`,
+      description: `A location in Iceland`,
+      location: {
+        latitude: data.locationtest.stadur?.latitude || 0,
+        longitude: data.locationtest.stadur?.longitude || 0
+      },
+      createdAt: data.locationtest._createdAt
+    };
+  } catch (error) { 
+    console.error('Error fetching test location by ID:', error);
+    return null; 
+  }
 }
