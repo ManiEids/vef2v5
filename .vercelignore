@@ -1,3 +1,6 @@
 prisma/
 src/lib/
 src/routes/
+
+# Remove or comment any line that excludes src/lib
+# src/lib
