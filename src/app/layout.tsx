@@ -32,6 +32,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <li>
                     <Link href="/test-locations" className="space-button">Staðsetningar</Link>
                   </li>
+                  <li>
+                    <Link href="/screenshots" className="space-button">Skjámyndir</Link>
+                  </li>
                 </ul>
               </div>
             </nav>
